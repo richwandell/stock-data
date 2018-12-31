@@ -1,6 +1,9 @@
 import datetime, csv
 import requests, json, time, os
 import numpy as np
+from numpy.core.multiarray import ndarray
+from pandas import DataFrame
+
 from utils import Db
 import pandas as pd
 from typing import List, Set, Dict, Tuple, Optional
@@ -8,20 +11,28 @@ import random
 from itertools import permutations
 from multiprocessing import Queue, Pool
 
+q = Queue()
+
 
 def compute_portfolio(all_inputs):
-    q, symbols, mean, std, coeffs = all_inputs
+    symbols, mean, std, coeffs = all_inputs
     weights = np.random.random(len(symbols))
     weights /= np.sum(weights)
     returns = np.dot(weights, mean)
 
     pfd = np.dot(weights ** 2, std.T ** 2)
+    pfd1 = 0.0
+    weights = pd.Series(weights, index=symbols)
+    computed = []
+    for symbol in symbols:
+        for symbol1 in symbols:
+            if symbol != symbol1 and sorted((symbol, symbol1)) not in computed:
+                cor = coeffs[symbol][symbol1]
+                pfd1 += 2 * weights[symbol] * std[symbol] * weights[symbol1] * std[symbol1] * cor
+                computed.append(sorted((symbol, symbol1)))
 
-    for index, row in coeffs.iterrows():
-        s1, s2 = row["symbols"].split("_")
-        coeff = row["coeff"]
-        pfd += 2 * weights[symbols.index(s1)] * std[s1] * weights[symbols.index(s2)] * std[s2] * coeff
-    q.put((weights, np.sqrt(pfd), returns))
+    risk = np.sqrt(pfd + pfd1)
+    q.put((weights, risk, returns))
 
 
 class AlphaVantage:
@@ -43,59 +54,56 @@ class AlphaVantage:
         self.db = Db(cache_folder)
         self.mem = {}
 
-    def get_monthly_portfolio_stats(self, portfolio: dict)->Tuple[pd.DataFrame, pd.DataFrame, float, float]:
+    def get_monthly_portfolio_stats(self, portfolio: dict)->Tuple[np.ndarray, np.ndarray, float, float]:
         if "symbols" not in portfolio: raise Exception("Missing symbols")
-        mean, std, coeffs, symbols, remove = self.get_monthly_stats(portfolio)
-        weights = {}
+        mean, std, corr, symbols, remove, combined = self.get_monthly_stats(portfolio)  
+        w = {}
         if "weights" in portfolio:
-            weights = portfolio["weights"]
+            w = portfolio["weights"]
         else:
             weight = 100.0 / float(len(symbols)) / 100.0
             for symbol in symbols:
-                weights[symbol] = weight
+                w[symbol] = weight
 
-        portfolio_return = 0.0
-        pfd = 0.0
+        weights = pd.Series([w[symbol] for symbol in symbols], index=symbols)
+
+        returns = np.dot(weights, mean)  # type: float
+        pfd = np.dot(weights ** 2, std.T ** 2)
+        pfd1 = 0.0
+        weights = pd.Series(weights, index=symbols)
+        computed = []
         for symbol in symbols:
-            portfolio_return += mean[symbol] * weights[symbol]
-            pfd += (weights[symbol] ** 2) * (std[symbol] ** 2)
-        for index, row in coeffs.iterrows():
-            s1, s2 = row["symbols"].split("_")
-            coeff = row["coeff"]
-            pfd += 2 * weights[s1] * std[s1] * weights[s2] * std[s2] * coeff
-        portfolio_risk = np.sqrt(pfd)
-        return std.as_matrix(), mean.as_matrix(), portfolio_risk, portfolio_return
-
-
+            for symbol1 in symbols:
+                if symbol != symbol1 and sorted((symbol, symbol1)) not in computed:
+                    cor = corr[symbol][symbol1]
+                    pfd1 += 2 * weights[symbol] * std[symbol] * weights[symbol1] * std[symbol1] * cor
+                    computed.append(sorted((symbol, symbol1)))
+        risk = np.sqrt(pfd + pfd1)
+        stdr = std.as_matrix()  # type: np.ndarray
+        mr = mean.as_matrix() # type: np.ndarray
+        return stdr, mr, risk, returns
 
     def get_random_portfolios(self, portfolio: dict)->Tuple[np.ndarray, list, list]:
         if "symbols" not in portfolio: raise Exception("Missing symbols")
-        mean, std, coeffs, symbols, remove = self.get_monthly_stats(portfolio)
+        mean, std, coeffs, symbols, remove, combined = self.get_monthly_stats(portfolio)
 
-        q = Queue()
         pool = Pool(processes=os.cpu_count())
-        pool.map(compute_portfolio, [(q, symbols, mean, std, coeffs) for x in range(50)])
+        pool.map(compute_portfolio, [(symbols, mean, std, coeffs) for x in range(10000)])
 
         portfolios = []
         portfolio_risk = []
         portfolio_return = []
-        while True:
-            try:
-                a, b, c = q.get(True)
-                portfolios.append(a)
-                portfolio_risk.append(b)
-                portfolio_return.append(c)
-
-            except q.empty():
-                print("Caught queue empty exception, done")
-                break
-        q.close()
-        pool.join()
+        while not q.empty():
+            a, b, c = q.get(True)
+            portfolios.append(a)
+            portfolio_risk.append(b)
+            portfolio_return.append(c)
+        pool.close()
 
         return np.column_stack((np.array(portfolios), np.array(portfolio_risk), np.array(portfolio_return))), symbols, \
             remove
 
-    def get_monthly_stats(self, portfolio: dict)->Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list, list]:
+    def get_monthly_stats(self, portfolio: dict)->Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list, list, pd.DataFrame]:
         if "symbols" not in portfolio: raise Exception("Missing symbols")
         symbols = portfolio["symbols"]  # type: list
         if tuple(symbols) in self.mem:
@@ -129,9 +137,14 @@ class AlphaVantage:
 
         mean = combined.mean()
         std = combined.std()
-        coeffs = self._compute_correlation_coefficients(symbols, combined)
-        self.mem[tuple(symbols)] = mean, std,coeffs, symbols, remove
-        return mean, std, coeffs, symbols, remove
+
+        coeffs = combined.set_index('month').T.as_matrix()
+        coeffs = pd.DataFrame(np.corrcoef(coeffs), columns=symbols)
+        coeffs['symbols'] = symbols
+        coeffs = coeffs.set_index('symbols')
+
+        self.mem[tuple(symbols)] = mean, std, coeffs, symbols, remove, combined
+        return mean, std, coeffs, symbols, remove, combined
 
     def _compute_monthly_returns(self, df: pd.DataFrame, symbol: str)->pd.DataFrame:
         years = sorted(list(set(list(df["year"]))))
@@ -152,25 +165,6 @@ class AlphaVantage:
                     ])
         returns = pd.DataFrame(returns)
         returns.columns = ['month', str(symbol)]
-        return returns
-
-
-    def _compute_correlation_coefficients(self, symbols: list, df: pd.DataFrame)->pd.DataFrame:
-        to_compute = []
-        coeffs = []
-        for symbol1 in symbols:
-            for symbol2 in symbols:
-                if symbol1 == symbol2: continue
-                temp_combo = sorted([symbol1, symbol2])
-                if temp_combo not in to_compute:
-                    to_compute.append(temp_combo)
-                    coeff = np.corrcoef(df[temp_combo[0]], df[temp_combo[1]])[0, 1]
-                    coeffs.append([
-                        temp_combo[0] + "_" + temp_combo[1],
-                        coeff
-                    ])
-        returns = pd.DataFrame(coeffs)
-        returns.columns = ['symbols', 'coeff']
         return returns
 
     def __load_symbol(self, symbol):

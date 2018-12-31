@@ -51,6 +51,10 @@ class Db:
 
     def __init__(self, cache_folder="cache")->None:
         self.conn = sqlite3.connect("%s/cache.sqlite3" % cache_folder)
+        self.conn.execute("PRAGMA journal_mode = WAL;")
+        self.conn.execute("PRAGMA cache_size = 4096000;")
+        self.conn.execute("PRAGMA optimize;")
+        self.conn.execute("PRAGMA busy_timeout = 150000;")
         self.conn.execute(self.CREATE_ALPHA_VANTAGE_PRICES)
         self.conn.execute(self.CREATE_ALPHA_VANTAGE_PRICES_INDEX)
         self.conn.execute(self.CREATE_ALPHA_VANTAGE_API_REQUESTS)
