@@ -1,0 +1,91 @@
+{
+  "alphavantage": {
+    "requests_per_minute": 5
+  },
+  "portfolios": [
+    {
+      "name": "Paychex",
+      "symbols": [
+        "JNSAX",
+        "FHIRX",
+        "EAVSX",
+        "ASMRX",
+        "PRMRX",
+        "RERCX",
+        "IASRX",
+        "AACRX",
+        "RWICX",
+        "JSVZX",
+        "PIOBX",
+        "ANORX",
+        "ACGIX",
+        "JSRAX",
+        "PTRRX",
+        "OIBAX",
+        "RGACX",
+        "SRJAX",
+        "AAARX",
+        "RFNCX",
+        "PWREX",
+        "MVCGX",
+        "JSAAX",
+        "JDPRX",
+        "ESVAX",
+        "AMANX",
+        "AMAGX"
+      ]
+    },
+    {
+      "name": "Principle",
+      "symbols": [
+        "WFBIX",
+        "VTINX",
+        "VTXVX",
+        "VTWNX",
+        "VTHRX",
+        "VTTHX",
+        "VFORX",
+        "VTIVX",
+        "VFIFX",
+        "VFFVX",
+        "VTTSX",
+        "VLXVX",
+        "VFIAX",
+        "NXS97",
+        "VIMAX",
+        "VREQX",
+        "VTIAX"
+      ]
+    },
+    {
+      "name": "Empower",
+      "symbols": [
+        "ATTIX",
+        "ARBSX",
+        "ARWFX",
+        "ARCSX",
+        "ARLIX",
+        "ARDSX",
+        "AOOIX",
+        "ARFSX",
+        "ARENX",
+        "ARGNX",
+        "VTIAX",
+        "REREX",
+        "ODVYX",
+        "LSSNX",
+        "DFTPX",
+        "JMGMX",
+        "TRMCX",
+        "JEQICF",
+        "MEIJX",
+        "JLGMX",
+        "BHYIX",
+        "DC-INC",
+        "VAIPX",
+        "VBTLX",
+        "PCSV25"
+      ]
+    }
+  ]
+}
