@@ -7,32 +7,44 @@ from pandas import DataFrame
 from utils import Db
 import pandas as pd
 from typing import List, Set, Dict, Tuple, Optional
-import random
-from itertools import permutations
 from multiprocessing import Queue, Pool
+from utils.EFC import portfolio_volatility
+from scipy import optimize
 
-q = Queue()
+def pool_init(queue):
+    global q
+    q = queue
 
 
 def compute_portfolio(all_inputs):
-    symbols, mean, std, coeffs = all_inputs
-    weights = np.random.random(len(symbols))
-    weights /= np.sum(weights)
-    returns = np.dot(weights, mean)
+    # populate the empty lists with each portfolios returns,risk and weights
+    risk_free_asset_return, to_compute, num_assets, av_returns, cov = all_inputs
+    return_vals = []
+    for _ in range(to_compute):
+        weights = np.random.random(num_assets)
+        weights /= np.sum(weights)
+        returns = np.dot(weights, av_returns)
 
-    pfd = np.dot(weights ** 2, std.T ** 2)
-    pfd1 = 0.0
-    weights = pd.Series(weights, index=symbols)
-    computed = []
-    for symbol in symbols:
-        for symbol1 in symbols:
-            if symbol != symbol1 and sorted((symbol, symbol1)) not in computed:
-                cor = coeffs[symbol][symbol1]
-                pfd1 += 2 * weights[symbol] * std[symbol] * weights[symbol1] * std[symbol1] * cor
-                computed.append(sorted((symbol, symbol1)))
+        risk = np.sqrt(np.dot(weights.T, np.dot(weights, cov)))
+        sharpe = (returns - risk_free_asset_return) / risk
+        return_vals.append((weights, risk, returns, sharpe))
 
-    risk = np.sqrt(pfd + pfd1)
-    q.put((weights, risk, returns))
+    q.put(tuple(return_vals))
+
+
+def efficient_return(all_inputs):
+    returns_annual, cov_annual, order, target = all_inputs
+    num_assets = len(returns_annual)
+    args = (returns_annual, cov_annual)
+
+    def portfolio_return(weights):
+        return np.dot(weights, returns_annual)
+
+    constraints = ({'type': 'eq', 'fun': lambda x: portfolio_return(x) - target},
+                   {'type': 'eq', 'fun': lambda x: np.sum(x) - 1})
+    bounds = tuple((0, 1) for asset in range(num_assets))
+    result = optimize.minimize(portfolio_volatility, num_assets*[1./num_assets,], args=args, method='SLSQP', bounds=bounds, constraints=constraints)
+    q.put((order, result))
 
 
 class AlphaVantage:
@@ -45,7 +57,7 @@ class AlphaVantage:
     closed_key = "4. close"
     ENDPOINT = 'https://www.alphavantage.co/query'
 
-    def __init__(self, apikey: str, preload_cache=True, requests_per_minute=5,
+    def __init__(self, apikey: str, requests_per_minute=5,
                  cache_folder="cache"):
         self.cache_folder = cache_folder
         self.requests_per_minute = requests_per_minute
@@ -53,119 +65,125 @@ class AlphaVantage:
         self.rpm = 0
         self.db = Db(cache_folder)
         self.mem = {}
+        self.queue = Queue()
+        self.pool = Pool(initializer=pool_init, initargs=(self.queue,), processes=os.cpu_count())
 
-    def get_monthly_portfolio_stats(self, portfolio: dict)->Tuple[np.ndarray, np.ndarray, float, float]:
+    def _load_symbols(self, portfolio: dict):
         if "symbols" not in portfolio: raise Exception("Missing symbols")
-        mean, std, corr, symbols, remove, combined = self.get_monthly_stats(portfolio)  
-        w = {}
-        if "weights" in portfolio:
-            w = portfolio["weights"]
-        else:
-            weight = 100.0 / float(len(symbols)) / 100.0
-            for symbol in symbols:
-                w[symbol] = weight
-
-        weights = pd.Series([w[symbol] for symbol in symbols], index=symbols)
-
-        returns = np.dot(weights, mean)  # type: float
-        pfd = np.dot(weights ** 2, std.T ** 2)
-        pfd1 = 0.0
-        weights = pd.Series(weights, index=symbols)
-        computed = []
+        symbols = portfolio["symbols"]  # type: list
         for symbol in symbols:
-            for symbol1 in symbols:
-                if symbol != symbol1 and sorted((symbol, symbol1)) not in computed:
-                    cor = corr[symbol][symbol1]
-                    pfd1 += 2 * weights[symbol] * std[symbol] * weights[symbol1] * std[symbol1] * cor
-                    computed.append(sorted((symbol, symbol1)))
-        risk = np.sqrt(pfd + pfd1)
-        stdr = std.as_matrix()  # type: np.ndarray
-        mr = mean.as_matrix() # type: np.ndarray
-        return stdr, mr, risk, returns
+            self.__load_symbol(symbol)
 
-    def get_random_portfolios(self, portfolio: dict)->Tuple[np.ndarray, list, list]:
-        if "symbols" not in portfolio: raise Exception("Missing symbols")
-        mean, std, coeffs, symbols, remove, combined = self.get_monthly_stats(portfolio)
+    def get_monthly_portfolio_stats(self, portfolio: dict)->Tuple[np.ndarray, np.ndarray, list]:
+        self._load_symbols(portfolio)
+        df = self.db.get_monthly_symbols_as_dataframe(portfolio["symbols"])
+        df['date_time'] = pd.to_datetime(df['date_time'])
+        df = df.set_index('date_time')
+        df = df.pivot(columns='symbol')
+        df = df.dropna()
+        column_names = [x[1] for x in list(df)]
 
-        pool = Pool(processes=os.cpu_count())
-        pool.map(compute_portfolio, [(symbols, mean, std, coeffs) for x in range(10000)])
+        returns_monthly = df.pct_change()
+        returns_mean = returns_monthly.mean().as_matrix()
+        annualized_return = (((1.0 + returns_mean) ** 12.0) - 1.0)
+        std = returns_monthly.std().as_matrix() * np.sqrt(12.0)
+        return std, annualized_return, column_names
+
+    def get_random_portfolios(self, portfolio: dict)->Tuple[np.ndarray, list, pd.DataFrame, pd.DataFrame, pd.DataFrame,
+                                                            pd.DataFrame]:
+        self._load_symbols(portfolio)
+
+        risk_free_asset_return = 0.0
+        if "risk_free_asset_return_percentage" in portfolio:
+            risk_free_asset_return = portfolio["risk_free_asset_return_percentage"] / 100
+
+        df = self.db.get_monthly_symbols_as_dataframe(portfolio["symbols"])
+        df['date_time'] = pd.to_datetime(df['date_time'])
+        df = df.set_index('date_time')
+        df = df.pivot(columns='symbol')
+        df = df.dropna()
+        column_names = [x[1] for x in list(df)]
+
+        returns_monthly = df.pct_change()
+        returns_mean = returns_monthly.mean()
+        annualized_return = (((1.0 + returns_mean) ** 12.0) - 1.0)
+        covariance = returns_monthly.cov() * 12.0
 
         portfolios = []
         portfolio_risk = []
         portfolio_return = []
-        while not q.empty():
-            a, b, c = q.get(True)
-            portfolios.append(a)
-            portfolio_risk.append(b)
-            portfolio_return.append(c)
-        pool.close()
+        sharpe_ratio = []
 
-        return np.column_stack((np.array(portfolios), np.array(portfolio_risk), np.array(portfolio_return))), symbols, \
-            remove
+        rows, columns = df.shape
+        num_assets = columns
+        num_portfolios = 50000
 
-    def get_monthly_stats(self, portfolio: dict)->Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list, list, pd.DataFrame]:
-        if "symbols" not in portfolio: raise Exception("Missing symbols")
-        symbols = portfolio["symbols"]  # type: list
-        if tuple(symbols) in self.mem:
-            return self.mem[tuple(symbols)]
-        for symbol in symbols:
-            self.__load_symbol(symbol)
+        to_compute = num_portfolios / os.cpu_count()
+        pool_args = [(risk_free_asset_return, int(to_compute), num_assets, annualized_return, covariance)
+                     for _ in range(os.cpu_count())]
+        self.pool.map(compute_portfolio, pool_args)
 
-        df = self.db.get_symbols_as_dataframe(portfolio["symbols"])
-        returns = []
-        remove = []
-        for symbol in symbols:
-            sdf = df[df['symbol'] == symbol]
-            try:
-                if sdf.shape[0] < 1:
-                    raise ValueError()
-                returns.append(self._compute_monthly_returns(sdf, symbol))
-            except ValueError as e:
-                remove.append(symbol)
-        for symbol in remove:
-            symbols.remove(symbol)
+        returned = 0
+        while True:
+            return_vals = self.queue.get(True)
+            for returns in return_vals:
+                a, b, c, d = returns
+                portfolios.append(a)
+                portfolio_risk.append(b)
+                portfolio_return.append(c)
+                sharpe_ratio.append(d)
 
-        combined = returns[0].set_index('month')
-        for num, symbol in enumerate(symbols):
-            if num > 0:
-                combined = combined.join(
-                    returns[num].set_index('month'),
-                    how='inner'
-                )
-        combined = combined.reset_index()
-        del returns
+            returned += 1
+            if returned == os.cpu_count():
+                break
 
-        mean = combined.mean()
-        std = combined.std()
+        return np.column_stack((
+            np.array(portfolios),
+            np.array(portfolio_risk),
+            np.array(portfolio_return),
+            np.array(sharpe_ratio)
+        )), column_names, returns_monthly, returns_mean, annualized_return, covariance
 
-        coeffs = combined.set_index('month').T.as_matrix()
-        coeffs = pd.DataFrame(np.corrcoef(coeffs), columns=symbols)
-        coeffs['symbols'] = symbols
-        coeffs = coeffs.set_index('symbols')
+    def get_efficient_frontier(self, portfolio: dict):
+        self._load_symbols(portfolio)
+        risk_free_asset_return = 0.0
+        if "risk_free_asset_return_percentage" in portfolio:
+            risk_free_asset_return = portfolio["risk_free_asset_return_percentage"] / 100
+        df = self.db.get_monthly_symbols_as_dataframe(portfolio["symbols"])
+        df['date_time'] = pd.to_datetime(df['date_time'])
+        df = df.set_index('date_time')
+        df = df.pivot(columns='symbol')
+        df = df.dropna()
+        column_names = [x[1] for x in list(df)]
 
-        self.mem[tuple(symbols)] = mean, std, coeffs, symbols, remove, combined
-        return mean, std, coeffs, symbols, remove, combined
+        returns_monthly = df.pct_change()
+        returns_mean = returns_monthly.mean()
+        annualized_return = (((1.0 + returns_mean) ** 12.0) - 1.0)
+        covariance = returns_monthly.cov() * 12.0
 
-    def _compute_monthly_returns(self, df: pd.DataFrame, symbol: str)->pd.DataFrame:
-        years = sorted(list(set(list(df["year"]))))
+        returns_min = annualized_return.min()
+        returns_max = annualized_return.max()
+        target = np.linspace(returns_min, returns_max, 100)
 
-        returns = []
-        for year_num in years:
-            year_data = df[df["year"] == year_num].sort_values(['month', 'day'], ascending=[1, 1])
-            months = sorted(list(set(list(year_data["month"]))))
+        self.pool.map(efficient_return, [(annualized_return, covariance, order, ret) for order, ret in enumerate(target)])
 
-            for month_num in months:
-                month_data = year_data[year_data["month"] == month_num]
-                if month_data.shape[0] > 1:
-                    start = month_data["open"].iloc[0]
-                    end = month_data.tail()["close"].iloc[0]
-                    returns.append([
-                        datetime.datetime(year=year_num, month=month_num, day=1),
-                        ((end - start) / start) * 100.00
-                    ])
-        returns = pd.DataFrame(returns)
-        returns.columns = ['month', str(symbol)]
-        return returns
+        returned = 0
+        efficient_portfolios = []
+        while True:
+            efficient_portfolios.append(self.queue.get(True))
+            returned += 1
+            if returned == len(target):
+                break
+
+        efficient_portfolios = sorted(efficient_portfolios, key=lambda x: x[0])
+        x_vals, portfolios = [], []
+        for p in efficient_portfolios:
+            x_vals.append(p[1]['fun'])
+            portfolios.append(p[1].x)
+        x_vals = np.array(x_vals)
+        y_vals = target
+        sharpe = (y_vals - risk_free_asset_return) / x_vals
+        return np.column_stack((x_vals, y_vals, sharpe, portfolios)), column_names
 
     def __load_symbol(self, symbol):
         if self.rpm == self.requests_per_minute:

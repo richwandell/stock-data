@@ -6,6 +6,7 @@
     "babel-cli": "^6.0.0",
     "babel-core": "^6.23.1",
     "babel-loader": "^6.3.2",
+    "babel-polyfill": "^6.26.0",
     "babel-preset-es2015": "^6.22.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.22.0",
@@ -13,6 +14,7 @@
     "grunt-babel": "^6.0.0",
     "grunt-contrib-clean": "^1.1.0",
     "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-less": "^2.0.0",
     "grunt-contrib-uglify": "^2.0.0",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-exec": "^1.0.1",
@@ -24,6 +26,6 @@
     "webpack": "^2.2.1"
   },
   "scripts": {
-    "postinstall": "grunt copy:dependencies; grunt webpack:vis"
+    "postinstall": "grunt copy:dependencies webpack:vis"
   }
 }

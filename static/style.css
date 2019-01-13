@@ -1,1 +1,36 @@
-fdasfsda
+body {
+  background: white;
+}
+body #react_renderer .scrollable {
+  overflow-y: auto;
+  max-height: 100%;
+  overflow-x: hidden;
+}
+body #react_renderer .scrollable li.nav-item {
+  display: block;
+  width: 100%;
+}
+body #react_renderer .scrollable li.nav-item input[type="number"] {
+  width: 60px;
+  display: block;
+}
+body #react_renderer .container-fluid {
+  height: 100vh;
+  overflow: hidden;
+}
+body #react_renderer .container-fluid .row:first-child {
+  height: 50px;
+  padding: 5px;
+  border: 1px solid #8080803b;
+}
+body #react_renderer .container-fluid .row:nth-child(2) {
+  height: calc(100% - 48px);
+}
+body #react_renderer .container-fluid .row:nth-child(2) .col-2 {
+  max-width: 135px;
+  border-right: 1px solid #8080803b;
+}
+body #react_renderer .highcharts-container {
+  height: 500px;
+}
+/*# sourceMappingURL=./static/style.css.map */

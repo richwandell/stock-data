@@ -39,9 +39,20 @@ module.exports = function (grunt) {
     }
 
     grunt.initConfig({
+        less: {
+            vis: {
+                options: {
+                    paths: ['./static'],
+                    sourceMap: true
+                },
+                files: {
+                    './static/style.css': './static/style.less'
+                }
+            },
+        },
         webpack: {
             vis: wConfig({
-                entry: ['./vis/Vis.jsx'],
+                entry: ['babel-polyfill', './vis/Vis.jsx'],
                 output: {filename: './static/dist/Vis.js'}
             })
         },
@@ -50,6 +61,10 @@ module.exports = function (grunt) {
                 files: ['vis/*.*', 'vis/components/*.*'],
                 tasks: ['webpack:vis']
             },
+            vis_less: {
+                files: ['static/**/*.less'],
+                tasks: ['less:vis']
+            }
         },
         copy: {
             dependencies: {
@@ -90,4 +105,5 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-webpack');
+    grunt.loadNpmTasks('grunt-contrib-less');
 };

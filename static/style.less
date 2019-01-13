@@ -1,0 +1,39 @@
+body {
+  background: white;
+
+  #react_renderer {
+    .scrollable {
+      overflow-y: auto;
+      max-height: 100%;
+      overflow-x: hidden;
+      li.nav-item {
+        display: block;
+        width: 100%;
+        input[type="number"] {
+          width: 60px;
+          display: block;
+        }
+      }
+    }
+    .container-fluid {
+      height: 100vh;
+      overflow: hidden;
+      .row:first-child {
+        height: 50px;
+        padding: 5px;
+        border: 1px solid #8080803b;
+      }
+      .row:nth-child(2) {
+        height: calc(100% - 48px);
+        .col-2 {
+          max-width: 135px;
+          border-right: 1px solid #8080803b;
+        }
+      }
+    }
+    .highcharts-container {
+      height: 500px;
+    }
+  }
+}
+

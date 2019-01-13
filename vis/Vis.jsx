@@ -5,14 +5,14 @@ import ReactDOM from 'react-dom';
 new class Vis {
 
     constructor() {
-        console.log("vis")
+        console.log("vis");
 
         $.getJSON("config.json", (data) => {
             this.config = data;
-            console.log(this.config)
-        })
+            console.log(this.config);
 
-        ReactDOM.render(<Main/>, $("#react_renderer")[0])
+            ReactDOM.render(<Main config={this.config}/>, $("#react_renderer")[0])
+        });
     }
 };
 

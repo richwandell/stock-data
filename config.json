@@ -5,6 +5,7 @@
   "portfolios": [
     {
       "name": "Paychex",
+      "risk_free_asset_return_percentage": 0.13,
       "symbols": [
         "JNSAX",
         "FHIRX",
@@ -51,7 +52,6 @@
         "VTTSX",
         "VLXVX",
         "VFIAX",
-        "NXS97",
         "VIMAX",
         "VREQX",
         "VTIAX"
@@ -77,14 +77,35 @@
         "DFTPX",
         "JMGMX",
         "TRMCX",
-        "JEQICF",
         "MEIJX",
         "JLGMX",
         "BHYIX",
-        "DC-INC",
         "VAIPX",
-        "VBTLX",
-        "PCSV25"
+        "VBTLX"
+      ]
+    },
+    {
+      "name": "Tech Stocks",
+      "symbols": [
+        "AMZN",
+        "BIDU",
+        "AAPL",
+        "NXPI",
+        "BABA",
+        "STNE",
+        "FB",
+        "ADBE",
+        "TWTR",
+        "IQ"
+      ]
+    },
+    {
+      "name": "Test",
+      "symbols": [
+        "AAPL",
+        "AMZN",
+        "GOOGL",
+        "FB"
       ]
     }
   ]

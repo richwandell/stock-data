@@ -1,6 +1,7 @@
 .creds
 creds.json
 cache/*.json
+cache/cache.sqlite3-*
 .idea
 node_modules
 cache/cache.sqlite3
