@@ -2,15 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=480, initial-scale=1">
     <title>Title</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='scripts/handsontable/handsontable.full.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
 </head>
 <body>
-    <div id="react_renderer"></div>
+<div id="react_renderer">
+    <div id="loading" class=" d-flex align-items-center">
+        <strong>Loading...</strong>
+        <div class="text-primary spinner-border ml-auto" role="status" aria-hidden="true"></div>
+    </div>
+</div>
 </body>
 
 <script src="{{ url_for('static', filename='scripts/jquery.min.js') }}"></script>
 <script src="{{ url_for('static', filename='scripts/highcharts/highcharts.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/handsontable/handsontable.full.js') }}"></script>
 <script src="{{ url_for('static', filename='dist/Vis.js') }} "></script>
 </html>

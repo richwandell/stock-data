@@ -1,12 +1,17 @@
 import React from "react";
 import Chart from "./Chart";
+import Table from "./Table";
+import PortfolioManagement from "./PortfolioManagement";
+import {PAGES} from "../constants";
 
 
 export default class Main extends React.Component {
 
     constructor(props) {
         super(props);
+        this.portfolios = props.config.portfolios;
         this.state = {
+            page: PAGES.PORTFOLIO,
             selected_portfolio: props.config.portfolios[0],
             symbol_selected: false,
             selected_symbol: props.config.portfolios[0].symbols[0]
@@ -18,8 +23,9 @@ export default class Main extends React.Component {
 
 
     portfolioClicked(p) {
+        let portfolio = $.extend({}, this.state.selected_portfolio, p);
         this.setState({
-            selected_portfolio: p
+            selected_portfolio: portfolio
         });
     }
 
@@ -49,19 +55,22 @@ export default class Main extends React.Component {
                 if(typeof(selectedPortfolio.allocations) !== "undefined") {
                     value = (selectedPortfolio.allocations[i] * 100).toFixed(2);
                 }
-                if(value > 0) {
-                    leftNav.push(<li className={"nav-item"}>
-                        <label>
-                            <a href="#" onClick={(e) => this.symbolClicked(symbol)}>{symbol}</a>
-                        </label>
-                        <input
-                            id={symbol + "_input"}
-                            value={value}
-                            type={"number"}/>
-                    </li>)
-                }
+
+                leftNav.push(
+                    <div className="form-group row">
+                        <label className="col-sm-2 col-form-label">{symbol}</label>
+                        <div className="col-sm-10">
+                            <input
+                                id={symbol + "_input"}
+                                value={value}
+                                type={"number"}
+                                className="form-control" />
+                        </div>
+                    </div>
+                );
             }
         }
+
 
 
         return (
@@ -72,20 +81,12 @@ export default class Main extends React.Component {
                     </ul>
                 </div>
                 <div className="row">
-                    <div className="col-2">
-                        <div className={"scrollable"}>
-                            <ul className={"nav nav-pills"}>
-                                {leftNav}
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="col-10">
-                        <div className={"scrollable"}>
-                        {this.state.selected_portfolio !== false && <Chart
-                            actions={this.actions}
-                            portfolio={this.state.selected_portfolio}/>}
-                        </div>
-                    </div>
+
+                    {this.state.page === PAGES.PORTFOLIO &&
+                    <PortfolioManagement
+                        actions={this.actions}
+                        selected_portfolio={this.state.selected_portfolio} />}
+
                 </div>
             </div>
 

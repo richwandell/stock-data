@@ -1,41 +1,50 @@
 import React from "react";
+import {perc} from "../Utils";
 
 
 export default class Chart extends React.Component {
 
     shouldComponentUpdate(newProps, newState) {
-        if(this.props.portfolio.name !== newProps.portfolio.name) {
+        if (this.props.portfolio.name !== newProps.portfolio.name) {
             return true;
         }
         return false;
     }
 
-    componentDidMount() {
-        this.renderChart();
+    async componentDidMount() {
+        this.res = {};
+        this.res[this.props.portfolio.name] = await this.getData();
+        this.renderChart(this.res[this.props.portfolio.name]);
+        this.props.actions.portfolioClicked(this.sharpePortfolio);
     }
 
-    componentDidUpdate() {
-        this.renderChart();
+    async componentDidUpdate() {
+        if (typeof(this.res[this.props.portfolio.name]) !== "undefined") {
+            this.renderChart(this.res[this.props.portfolio.name]);
+        } else {
+            this.res[this.props.portfolio.name] = await this.getData();
+            this.renderChart(this.res[this.props.portfolio.name]);
+            this.props.actions.portfolioClicked(this.sharpePortfolio);
+        }
     }
 
-    createChart(){
-        let p = this.props.portfolio;
+    createChart() {
         this.chart = new Highcharts.Chart({
             credits: {
                 enabled: false
             },
-            chart:{
+            chart: {
                 plotBackgroundColor: "rgb(234, 234, 242)",
                 renderTo: 'highcharts-container'
             },
             title: {
-                text: "Portfolio " + p.name
+                text: ''
             },
-            yAxis:{
+            yAxis: {
                 gridLineWidth: 1,
                 minorGridLineWidth: 0,
                 labels: {
-                    formatter: function() {
+                    formatter: function () {
                         return (this.value * 100).toFixed(1) + "%";
                     }
                 },
@@ -44,10 +53,10 @@ export default class Chart extends React.Component {
                     text: "Annualized Monthly Return"
                 }
             },
-            xAxis:{
+            xAxis: {
                 gridLineWidth: 1,
                 labels: {
-                    formatter: function() {
+                    formatter: function () {
                         return (this.value * 100).toFixed(1) + "%";
                     }
                 },
@@ -64,13 +73,43 @@ export default class Chart extends React.Component {
             },
             series: [],
 
-            plotOptions:{
+            plotOptions: {
                 scatter: {
                     dataLabels: {
                         format: "{point.name}",
                         enabled: true
                     }
                 }
+            },
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 500
+                    },
+                    chartOptions: {
+                        legend: {
+                            align: 'center',
+                            verticalAlign: 'bottom',
+                            layout: 'horizontal'
+                        },
+                        yAxis: {
+                            labels: {
+                                align: 'left',
+                                x: 0,
+                                y: -5
+                            },
+                            title: {
+                                text: null
+                            }
+                        },
+                        subtitle: {
+                            text: null
+                        },
+                        credits: {
+                            enabled: false
+                        }
+                    }
+                }]
             }
         });
     }
@@ -89,16 +128,15 @@ export default class Chart extends React.Component {
         return dfd;
     }
 
-    async renderChart() {
+    async renderChart(res) {
         this.createChart();
 
-        let perc = (val) => (val * 100.0).toFixed(2);
 
-        let res = await this.getData();
+
         let data = [];
         let assets = res.assets;
 
-        for(let i = 0; i < assets.assets.length; i++){
+        for (let i = 0; i < assets.assets.length; i++) {
             data.push({
                 name: assets.assets[i],
                 y: assets.asset_reward[i],
@@ -112,20 +150,20 @@ export default class Chart extends React.Component {
         let maxSharpePoint = [];
         let sharpePortfolio = [];
         let efficientPortfolioStrings = [];
-        for(let i = 0; i < portfolios.length; i++) {
+        for (let i = 0; i < portfolios.length; i++) {
             data1.push({
                 name: 'Portfolio ' + i,
                 x: portfolios[i][0],
                 y: portfolios[i][1]
             });
             let portfolioString = "";
-            for(let j = 3; j < portfolios[i].length; j++){
-                if((portfolios[i][j]*100).toFixed(2) > 0) {
+            for (let j = 3; j < portfolios[i].length; j++) {
+                if ((portfolios[i][j] * 100).toFixed(2) > 0) {
                     portfolioString += efficientSymbols[j - 3] + ": " + perc(portfolios[i][j]) + "% <br>";
                 }
             }
             efficientPortfolioStrings.push(portfolioString);
-            if(portfolios[i][2] > maxSharpeValue) {
+            if (portfolios[i][2] > maxSharpeValue) {
                 maxSharpePoint = {
                     name: "Maximum Sharpe Ratio",
                     x: portfolios[i][0],
@@ -133,14 +171,20 @@ export default class Chart extends React.Component {
                 };
                 maxSharpeValue = portfolios[i][2];
                 sharpePortfolio = portfolios[i].slice(0);
-                sharpePortfolio.shift();
-                sharpePortfolio.shift();
-                sharpePortfolio.shift();
+                let risk = sharpePortfolio.shift();
+                let ret = sharpePortfolio.shift();
+                let sharpe = sharpePortfolio.shift();
+                this.sharpePortfolio = {
+                    risk_return_sharpe: [risk, ret, sharpe],
+                    allocations: sharpePortfolio,
+                    symbols: efficientSymbols,
+                    name: this.props.portfolio.name
+                };
             }
         }
         let sharpePortfolioString = "";
-        for(let i = 0; i < sharpePortfolio.length; i++){
-            if((sharpePortfolio[i]*100).toFixed(2) > 0) {
+        for (let i = 0; i < sharpePortfolio.length; i++) {
+            if ((sharpePortfolio[i] * 100).toFixed(2) > 0) {
                 sharpePortfolioString += efficientSymbols[i] + ": " + perc(sharpePortfolio[i]) + "% <br>";
             }
         }
@@ -186,6 +230,7 @@ export default class Chart extends React.Component {
                     click: function () {
                         portfolio.symbols = efficientSymbols;
                         portfolio.allocations = portfolios[this.index].slice(3);
+                        portfolio.risk_return_sharpe = portfolios[this.index].slice(0, 3);
                         actions.portfolioClicked(portfolio);
                     }
                 }
@@ -209,10 +254,10 @@ export default class Chart extends React.Component {
         });
     }
 
-    render(){
+    render() {
         return (
             <div id="highcharts-container" className={"highcharts-container"}>
-                Chart Container
+
             </div>
         );
     }

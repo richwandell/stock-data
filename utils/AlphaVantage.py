@@ -94,8 +94,9 @@ class AlphaVantage:
         self._load_symbols(portfolio)
 
         risk_free_asset_return = 0.0
-        if "risk_free_asset_return_percentage" in portfolio:
-            risk_free_asset_return = portfolio["risk_free_asset_return_percentage"] / 100
+        if "risk_free" in portfolio:
+            if "perc" in portfolio["risk_free"]:
+                risk_free_asset_return = portfolio["risk_free"]["perc"] / 100
 
         df = self.db.get_monthly_symbols_as_dataframe(portfolio["symbols"])
         df['date_time'] = pd.to_datetime(df['date_time'])
@@ -143,6 +144,53 @@ class AlphaVantage:
             np.array(portfolio_return),
             np.array(sharpe_ratio)
         )), column_names, returns_monthly, returns_mean, annualized_return, covariance
+
+    def get_risk_free_frontier(self, portfolio: dict):
+        self._load_symbols(portfolio)
+        risk_free_return = 0.0
+        risk_free_symbol = ""
+        if "risk_free" in portfolio:
+            if "symbol" in portfolio["risk_free"]:
+                risk_free_return = portfolio["risk_free"]["perc"] / 100
+                risk_free_symbol = portfolio["risk_free"]["symbol"]
+
+        df = self.db.get_monthly_symbols_as_dataframe(portfolio["symbols"])
+        df['date_time'] = pd.to_datetime(df['date_time'])
+        df = df.set_index('date_time')
+        df = df.pivot(columns='symbol')
+        df = df.dropna()
+        column_names = [x[1] for x in list(df)]
+
+        returns_monthly = df.pct_change()
+        returns_monthly["adjusted_close/" + risk_free_symbol] = risk_free_return / 12.0
+        returns_mean = returns_monthly.mean()
+        annualized_return = (((1.0 + returns_mean) ** 12.0) - 1.0)
+        covariance = returns_monthly.cov() * 12.0
+
+        returns_min = annualized_return.min()
+        returns_max = annualized_return.max()
+        target = np.linspace(returns_min, returns_max, 100)
+
+        self.pool.map(efficient_return,
+                      [(annualized_return, covariance, order, ret) for order, ret in enumerate(target)])
+
+        returned = 0
+        efficient_portfolios = []
+        while True:
+            efficient_portfolios.append(self.queue.get(True))
+            returned += 1
+            if returned == len(target):
+                break
+
+        efficient_portfolios = sorted(efficient_portfolios, key=lambda x: x[0])
+        x_vals, portfolios = [], []
+        for p in efficient_portfolios:
+            x_vals.append(p[1]['fun'])
+            portfolios.append(p[1].x)
+        x_vals = np.array(x_vals)
+        y_vals = target
+        sharpe = (y_vals) / x_vals
+        return np.column_stack((x_vals, y_vals, sharpe, portfolios)), column_names
 
     def get_efficient_frontier(self, portfolio: dict):
         self._load_symbols(portfolio)

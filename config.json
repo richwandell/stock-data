@@ -5,7 +5,10 @@
   "portfolios": [
     {
       "name": "Paychex",
-      "risk_free_asset_return_percentage": 0.13,
+      "risk_free": {
+        "symbol": "LACXX",
+        "perc": 0.02
+      },
       "symbols": [
         "JNSAX",
         "FHIRX",
@@ -106,6 +109,16 @@
         "AMZN",
         "GOOGL",
         "FB"
+      ]
+    },
+    {
+      "name": "Steph",
+      "symbols": [
+        "GOOS",
+        "LVMUY",
+        "ULTA",
+        "TGT",
+        "BOND"
       ]
     }
   ]

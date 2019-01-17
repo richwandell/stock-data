@@ -7,3 +7,5 @@ node_modules
 cache/cache.sqlite3
 static/dist
 static/scripts
+static/style.css
+static/style.css.map

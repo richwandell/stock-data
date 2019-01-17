@@ -18,11 +18,13 @@ if __name__ == '__main__':
     db = Db()
 
     start = time.time()
+    config["portfolios"] = [config["portfolios"][-1]]
     for portfolio in config["portfolios"]:
         symbol_string = "_".join(portfolio["symbols"])
         portfolio_key = hashlib.md5(symbol_string.encode("utf8")).hexdigest()
 
         efficient_frontier, symbols = alpha_vantage.get_efficient_frontier(portfolio)
+        # risk_free_frontier, symbols = alpha_vantage.get_risk_free_frontier(portfolio)
         db.save_efficient_portfolio_stats(portfolio_key + "_efficient", efficient_frontier, symbols)
         asset_risk, asset_reward, assets = alpha_vantage.get_monthly_portfolio_stats(portfolio)
         db.save_monthly_portfolio_stats(portfolio_key + "_monthly", asset_risk, asset_reward, assets)
@@ -49,6 +51,7 @@ if __name__ == '__main__':
         plt.scatter(x=sharpe_portfolio[:, 0], y=sharpe_portfolio[:, 1], marker="^", s=200, c='blue')
         plt.scatter(x=min_variance_port[:, 0], y=min_variance_port[:, 1], marker="^", s=200, c='red')
         plt.plot(efficient_frontier[:, 0], efficient_frontier[:, 1], color='blue')
+        # plt.plot(risk_free_frontier[:, 0], risk_free_frontier[:, 1], color='green')
         plt.show()
     end = time.time()
     # 31.766854286193848

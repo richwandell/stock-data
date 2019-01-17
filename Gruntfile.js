@@ -20,15 +20,15 @@ module.exports = function (grunt) {
             inline: false,
             devtool: 'source-map',
             plugins: [
-                new webpack.optimize.UglifyJsPlugin({
-                    compress: {
-                        warnings: false
-                    },
-                    output: {
-                        comments: false
-                    },
-                    sourceMap: true
-                })
+                // new webpack.optimize.UglifyJsPlugin({
+                //     compress: {
+                //         warnings: false
+                //     },
+                //     output: {
+                //         comments: false
+                //     },
+                //     sourceMap: true
+                // })
             ]
         };
 
@@ -69,6 +69,11 @@ module.exports = function (grunt) {
         copy: {
             dependencies: {
                 files: [{
+                    cwd: 'node_modules/handsontable/dist/',
+                    src: ['handsontable.full.js', 'handsontable.full.css'],
+                    dest: 'static/scripts/handsontable/',
+                    expand: true
+                },{
                     cwd: 'node_modules/gist-async/js/',
                     src: 'gist-async.min.js',
                     dest: 'static/scripts/',
