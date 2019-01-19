@@ -1,3 +1,11 @@
-FROM frolvlad/alpine-python-machinelearning:latest
+FROM ubuntu:latest
 
-RUN pip install requests
+COPY requirements.txt .
+RUN apt-get update
+RUN apt-get install -y python3-pip libfreetype6-dev
+RUN pip3 -v
+RUN pip3 install --upgrade setuptools
+RUN pip3 install freetype-py
+RUN pip3 install pypng
+RUN pip3 install -r requirements.txt
+

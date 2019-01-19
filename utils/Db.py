@@ -2,6 +2,7 @@ import sqlite3, datetime, json
 import pandas as pd
 import numpy as np
 
+
 class Db:
     DATE_KEY = '%Y-%m-%d'
     CREATE_ALPHA_VANTAGE_PRICES = """
@@ -56,10 +57,10 @@ class Db:
     """
     SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS = """
     select 
-        ap.*, 
-        cast(strftime('%%m', date_time, 'unixepoch') as int) as month, 
-        cast(strftime('%%Y', date_time, 'unixepoch') as int) as year,
-        cast(strftime('%%d', date_time, 'unixepoch') as int) as day 
+        symbol,
+        strftime('%%Y-%%m-%%d', date_time, 'unixepoch') as date_time,
+        date_time as unix_time,
+        adjusted_close         
     from alpha_vantage_prices ap
     where symbol in (%(symbols)s)    
     """

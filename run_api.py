@@ -18,7 +18,7 @@ if __name__ == '__main__':
     db = Db()
 
     start = time.time()
-    config["portfolios"] = [config["portfolios"][-1]]
+
     for portfolio in config["portfolios"]:
         symbol_string = "_".join(portfolio["symbols"])
         portfolio_key = hashlib.md5(symbol_string.encode("utf8")).hexdigest()
