@@ -1,12 +1,12 @@
 version: '2'
 services:
   flask:
-    build:
-      context: ./
+    image: 'richwandell/python3-ml:first'
     ports:
       - "5000:5000"
     tty: true
     volumes:
       - './:/app'
     working_dir: /app
+    command: tail -f /var/log/syslog
 
