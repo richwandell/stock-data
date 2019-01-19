@@ -10,3 +10,4 @@ RUN pip3 install freetype-py
 RUN pip3 install pypng
 RUN pip3 install -r requirements.txt
 
+RUN touch /var/log/app.log
