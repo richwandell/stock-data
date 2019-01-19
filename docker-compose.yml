@@ -1,7 +1,7 @@
 version: '2'
 services:
   flask:
-    image: 'richwandell/python3-ml:first'
+    image: 'richwandell/python3-ml:second'
     ports:
       - "5000:5000"
     tty: true
