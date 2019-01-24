@@ -9,3 +9,4 @@ static/dist
 static/scripts
 static/style.css
 static/style.css.map
+.ipynb_checkpoints

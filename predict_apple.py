@@ -37,3 +37,5 @@ plt.title('Support Vector Regression')
 plt.legend()
 plt.show()
 
+tomo
+svr_rbf.predict()

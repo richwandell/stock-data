@@ -41,14 +41,6 @@ body {
     > .container-fluid {
       height: 100vh;
       overflow: hidden;
-      > .row:first-child {
-        height: 50px;
-        padding: 5px;
-        border: 1px solid #8080803b;
-        margin-right: -15px;
-        margin-left: -15px;
-        padding-left: 20px;
-      }
       > .row:nth-child(2) {
         height: calc(100% - 48px);
         margin: 0;
@@ -98,5 +90,7 @@ body {
       }
     }
   }
+
+  @import "styles/top_nav.less";
 }
 

@@ -3,6 +3,7 @@ import Chart from "./Chart";
 import Table from "./Table";
 import PortfolioManagement from "./PortfolioManagement";
 import {PAGES} from "../constants";
+import Nav from "./Nav";
 
 
 export default class Main extends React.Component {
@@ -39,12 +40,7 @@ export default class Main extends React.Component {
     render() {
         const config = this.props.config;
 
-        let nav = []
-        for(let p of config.portfolios){
-            nav.push(<li className={"nav-item"} onClick={(e) => this.portfolioClicked(p)} >
-                <a href="#" className={"nav-link " + (this.state.selected_portfolio.name === p.name ? "active" : "")} >{p.name}</a>
-            </li>)
-        }
+
 
         let leftNav = [];
         if(this.state.selected_portfolio) {
@@ -75,11 +71,11 @@ export default class Main extends React.Component {
 
         return (
             <div className="container-fluid">
-                <div className={"row"}>
-                    <ul className="nav nav-pills">
-                        {nav}
-                    </ul>
-                </div>
+                <Nav
+                    selected_portfolio={this.state.selected_portfolio}
+                    actions={this.actions}
+                    config={config}
+                    page={this.state.page}/>
                 <div className="row">
 
                     {this.state.page === PAGES.PORTFOLIO &&
