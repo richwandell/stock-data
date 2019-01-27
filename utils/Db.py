@@ -60,9 +60,15 @@ class Db:
         symbol,
         strftime('%%Y-%%m-%%d', date_time, 'unixepoch') as date_time,
         date_time as unix_time,
-        adjusted_close         
+        adjusted_close,
+        `close`,
+        high,
+        low,
+        `open`,
+        volume         
     from alpha_vantage_prices ap
     where symbol in (%(symbols)s)    
+    group by symbol, strftime('%%Y-%%m-%%d', date_time, 'unixepoch')
     """
     INSERT_MONTHLY_PORTFOLIO_STATS = """
     insert or ignore into monthly_portfolio_stats values (?, ?);

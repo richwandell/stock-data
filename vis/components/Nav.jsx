@@ -15,16 +15,22 @@ export default class Nav extends Component {
             <div className={"row"}>
                 <ul className={"nav nav-tabs"}>
                     <li className={"nav-item"}>
-                        <a href="#" className={"nav-link active"}> Portfolio Optimization</a>
+                        <a href="#"
+                           onClick={() => this.props.actions.pageClicked(PAGES.PORTFOLIO)}
+                           className={"nav-link " + (this.props.page === PAGES.PORTFOLIO ? "active" : "")}> Portfolio Optimization</a>
                     </li>
                     <li className={"nav-item"}>
-                        <a href="#" className={"nav-link"}> Fundamental Analysis</a>
+                        <a href="#"
+                           onClick={() => this.props.actions.pageClicked(PAGES.FUNDAMENTAL)}
+                           className={"nav-link " + (this.props.page === PAGES.FUNDAMENTAL ? "active" : "")}> Fundamental Analysis</a>
                     </li>
                     <li className={"nav-item"}>
-                        <a href="#" className={"nav-link"}> Technical Analysis</a>
+                        <a href="#"
+                           onClick={() => this.props.actions.pageClicked(PAGES.TECHNICAL)}
+                           className={"nav-link " + (this.props.page === PAGES.TECHNICAL ? "active" : "")}> Technical Analysis</a>
                     </li>
                 </ul>
-                {this.props.page === PAGES.PORTFOLIO &&
+                {[PAGES.PORTFOLIO, PAGES.TECHNICAL].indexOf(this.props.page) > -1 &&
                 <ul className="nav nav-pills">
                     {nav}
                 </ul>}

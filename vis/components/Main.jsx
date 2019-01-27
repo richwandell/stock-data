@@ -4,6 +4,7 @@ import Table from "./Table";
 import PortfolioManagement from "./PortfolioManagement";
 import {PAGES} from "../constants";
 import Nav from "./Nav";
+import TechnicalAnalysis from "./TechnicalAnalysis";
 
 
 export default class Main extends React.Component {
@@ -18,8 +19,15 @@ export default class Main extends React.Component {
             selected_symbol: props.config.portfolios[0].symbols[0]
         };
         this.actions = {
-            portfolioClicked: (p) => this.portfolioClicked(p)
+            portfolioClicked: (p) => this.portfolioClicked(p),
+            pageClicked: (p) => this.pageClicked(p)
         };
+    }
+
+    pageClicked(p) {
+        this.setState({
+            page: p
+        })
     }
 
 
@@ -38,43 +46,12 @@ export default class Main extends React.Component {
     }
 
     render() {
-        const config = this.props.config;
-
-
-
-        let leftNav = [];
-        if(this.state.selected_portfolio) {
-            let selectedPortfolio = this.state.selected_portfolio;
-            for(let i = 0; i < selectedPortfolio.symbols.length; i++){
-                let symbol = selectedPortfolio.symbols[i];
-                let value = 0;
-                if(typeof(selectedPortfolio.allocations) !== "undefined") {
-                    value = (selectedPortfolio.allocations[i] * 100).toFixed(2);
-                }
-
-                leftNav.push(
-                    <div className="form-group row">
-                        <label className="col-sm-2 col-form-label">{symbol}</label>
-                        <div className="col-sm-10">
-                            <input
-                                id={symbol + "_input"}
-                                value={value}
-                                type={"number"}
-                                className="form-control" />
-                        </div>
-                    </div>
-                );
-            }
-        }
-
-
-
         return (
             <div className="container-fluid">
                 <Nav
                     selected_portfolio={this.state.selected_portfolio}
                     actions={this.actions}
-                    config={config}
+                    config={this.props.config}
                     page={this.state.page}/>
                 <div className="row">
 
@@ -82,7 +59,10 @@ export default class Main extends React.Component {
                     <PortfolioManagement
                         actions={this.actions}
                         selected_portfolio={this.state.selected_portfolio} />}
-
+                    {this.state.page === PAGES.TECHNICAL &&
+                    <TechnicalAnalysis
+                        actions={this.actions}
+                        selected_portfolio={this.state.selected_portfolio}/> }
                 </div>
             </div>
 

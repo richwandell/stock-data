@@ -194,9 +194,7 @@ class AlphaVantage:
 
     def get_efficient_frontier(self, portfolio: dict):
         self._load_symbols(portfolio)
-        risk_free_asset_return = 0.0
-        if "risk_free_asset_return_percentage" in portfolio:
-            risk_free_asset_return = portfolio["risk_free_asset_return_percentage"] / 100
+
         df = self.db.get_monthly_symbols_as_dataframe(portfolio["symbols"])
         df['date_time'] = pd.to_datetime(df['date_time'])
         df = df.set_index('date_time')
@@ -230,7 +228,7 @@ class AlphaVantage:
             portfolios.append(p[1].x)
         x_vals = np.array(x_vals)
         y_vals = target
-        sharpe = (y_vals - risk_free_asset_return) / x_vals
+        sharpe = y_vals / x_vals
         return np.column_stack((x_vals, y_vals, sharpe, portfolios)), column_names
 
     def __load_symbol(self, symbol):
