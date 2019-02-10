@@ -88,38 +88,30 @@
       ]
     },
     {
-      "name": "Tech Stocks",
+      "name": "IT: Hardware, Storage & Peripherals",
       "symbols": [
-        "AMZN",
-        "BIDU",
         "AAPL",
-        "NXPI",
-        "BABA",
-        "STNE",
-        "FB",
+        "HPE",
+        "HPQ",
+        "STX",
+        "WDC",
+        "XRX"
+      ]
+    },
+    {
+      "name": "IT: Application Software",
+      "symbols": [
         "ADBE",
-        "TWTR",
-        "IQ"
-      ]
-    },
-    {
-      "name": "Test",
-      "symbols": [
-        "AAPL",
-        "AMZN",
-        "GOOGL",
-        "FB"
-      ]
-    },
-    {
-      "name": "Steph",
-      "symbols": [
-        "GOOS",
-        "LVMUY",
-        "ULTA",
-        "TGT",
-        "BOND"
+        "ANSS",
+        "ADSK",
+        "CDNS",
+        "ORCL",
+        "SYMC",
+        "SNPS"
       ]
     }
-  ]
+  ],
+  "twitter_handles": {
+    "AAPL": "@apple"
+  }
 }

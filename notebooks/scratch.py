@@ -1,9 +1,13 @@
+import ta
+from scipy.signal import argrelextrema
 import os
 import sys
 
+from sklearn import preprocessing
+from sklearn.svm import SVC
 
 sys.path.append("..")
-from utils.Db import Db
+from utils import Db
 import pandas as pd
 import matplotlib.dates as mdates
 import numpy as np
@@ -12,55 +16,56 @@ from datetime import datetime
 from datetime import timedelta
 
 
-
-
-
 db = Db("../cache")
-df = db.get_symbols_as_dataframe(['AAPL'])
+df = db.get_symbols_as_dataframe(['HPQ'])
 df['date_time'] = pd.to_datetime(df['date_time'])
-
-ewmdf = df[df['date_time'] > datetime.now() - timedelta(days=240)]
-ewmdf = ewmdf.reset_index()
-days_12 = ewmdf['adjusted_close'].ewm(span=12).mean()
-days_12 = days_12.reset_index()
-days_26 = ewmdf['adjusted_close'].ewm(span=26).mean()
-days_26 = days_26.reset_index()
-
-macd_line = pd.DataFrame(days_12['adjusted_close'] - days_26['adjusted_close'], columns=['adjusted_close'])
-macd_line.index = ewmdf['date_time']
-macd_line = macd_line.reset_index()
-signal_line = macd_line['adjusted_close'].ewm(span=9).mean()
-signal_line = signal_line.reset_index()
-macd_hist = macd_line['adjusted_close'] - signal_line['adjusted_close']
-
-scatter_data = ewmdf[['unix_time', 'adjusted_close', 'date_time']].as_matrix()
+df = ta.add_all_ta_features(df, 'open', 'high', 'low', 'close', 'volume')
+scatter_data = df[['unix_time', 'adjusted_close', 'date_time']].as_matrix()
 dates = scatter_data[:, 2]
 
-start_money = 1000.
-current_money = start_money
-shares = 0.
-buy_signals, sell_signals = [], []
-for i, current_adjusted_close in enumerate(macd_line['adjusted_close']):
-    if i > 0:
-        #buy signal
-        if macd_line['adjusted_close'].loc[i - 1] < 0 < current_adjusted_close:
-            buy_signals.append(scatter_data[i, 2])
-            current_price = ewmdf['adjusted_close'].loc[i]
-            buying = np.floor(current_money / current_price)
-            shares += buying
-            current_money -= buying * current_price
-        elif macd_line['adjusted_close'].loc[i - 1] > 0 > current_adjusted_close:
-            sell_signals.append(scatter_data[i, 2])
-            current_price = ewmdf['adjusted_close'].loc[i]
-            current_money += current_price * shares
-            shares = 0
+df = df.set_index('date_time')
+df['make_a_trade'] = 0
 
-start_price = ewmdf['adjusted_close'].loc[0]
-end_price = ewmdf['adjusted_close'][ewmdf.index[-1]]
-start_shares = np.floor(start_money / start_price)
-end_money = end_price * start_shares
-print("MACD Trading: $" + str(current_money))
-print("Buy and Hold: $" + str(end_money))
+mins = argrelextrema(df['adjusted_close'].as_matrix(), np.less, order=5)
+mins_dates = dates[mins[0]]
+mins_vals = scatter_data[mins[0], 1]
+maxes = argrelextrema(df['adjusted_close'].as_matrix(), np.greater, order=5)
+maxes_dates = dates[maxes[0]]
+maxes_vals = scatter_data[maxes[0], 1]
+
+df['make_a_trade'][mins_dates] = 1
+df['make_a_trade'][maxes_dates] = 2
+df = df.dropna()
+columns = ['volume_adi', 'volume_obv', 'volume_obvm', 'volume_cmf', 'volume_fi', 'volume_em', 'volume_vpt',
+           'volume_nvi', 'volatility_atr', 'volatility_bbh', 'volatility_bbl', 'volatility_bbm', 'volatility_bbhi',
+           'volatility_bbli', 'volatility_kcc', 'volatility_kch', 'volatility_kcl', 'volatility_kchi',
+           'volatility_kcli', 'volatility_dch', 'volatility_dcl', 'volatility_dchi', 'volatility_dcli', 'trend_macd',
+           'trend_macd_signal', 'trend_macd_diff', 'trend_ema_fast', 'trend_ema_slow', 'trend_adx', 'trend_adx_pos',
+           'trend_adx_neg', 'trend_vortex_ind_pos', 'trend_vortex_ind_neg', 'trend_vortex_diff', 'trend_trix',
+           'trend_mass_index', 'trend_cci', 'trend_dpo', 'trend_kst', 'trend_kst_sig', 'trend_kst_diff',
+           'trend_ichimoku_a', 'trend_ichimoku_b', 'trend_visual_ichimoku_a', 'trend_visual_ichimoku_b',
+           'trend_aroon_up', 'trend_aroon_down', 'trend_aroon_ind', 'momentum_rsi', 'momentum_mfi', 'momentum_tsi',
+           'momentum_uo', 'momentum_stoch', 'momentum_stoch_signal', 'momentum_wr', 'momentum_ao', 'make_a_trade']
+source_data = df[columns].as_matrix()
+
+print("ho")
+
+training_data = source_data[:int(len(source_data) * .98), 0:-1]
+testing_data = source_data[len(training_data):, 0:-1]
+target = source_data[:int(len(source_data) * .98), -1].astype(int)
+testing_target = source_data[len(training_data):, -1].astype(int)
+
+scaler = preprocessing.StandardScaler()
+x_train = scaler.fit_transform(training_data)
+
+svr_rbf = SVC(kernel='rbf', class_weight="balanced")
+svr_rbf.fit(x_train, target)
+
+test_output = svr_rbf.predict(scaler.transform(testing_data))
+errors = np.abs(testing_target - test_output)
+print(np.std(errors))
+print(np.mean(errors))
+
 
 years = mdates.YearLocator()  # every year
 months = mdates.MonthLocator()  # every month
@@ -68,46 +73,66 @@ days = mdates.DayLocator()
 yearsFmt = mdates.DateFormatter('%Y-%m-%d')
 fig = plt.figure()
 ax = fig.add_subplot(211)
+
 ax.scatter(dates, scatter_data[:, 1].tolist(), label='Price', s=2)
-ax.plot(dates, days_12['adjusted_close'], label='15 Days Moving Average', color='red')
-ax.plot(dates, days_26['adjusted_close'], label='30 Days Moving Average', color='green')
+ax.scatter(maxes_dates, maxes_vals.tolist(), label='Maxes', s=10, color='red')
+ax.scatter(mins_dates, mins_vals.tolist(), label='Mins', s=10, color='green')
 
-for date in buy_signals:
-    ax.axvline(date, color=[.78, .83, .89, 1.0])
-for date in sell_signals:
-    ax.axvline(date, color=[1.0, .89, .89, 1.0])
-
-ax.xaxis.set_major_locator(years)
-ax.xaxis.set_minor_locator(months)
-ax.xaxis.set_major_formatter(yearsFmt)
-ax.format_xdata = mdates.DateFormatter('%Y-%m-%d')
-
-plt.title('MACD indicator')
-plt.legend()
+plt.ylabel('Price')
+plt.title('Data')
 
 ax = fig.add_subplot(212, sharex=ax)
-ax.plot(dates, macd_line['adjusted_close'], label='MACD Line', color='blue')
-ax.plot(dates, signal_line['adjusted_close'], label='Signal Line', color='red')
-colors = ["green" if x > 0 else "red" for x in macd_hist]
-ax.bar(dates, macd_hist, label='MACD Hist', color=colors)
+test_dates = dates[-len(testing_data):]
+ax.plot(test_dates, test_output)
 
-ax.xaxis.set_major_locator(years)
-ax.xaxis.set_minor_locator(months)
+left = dates[-120]
+right = dates[-1] + timedelta(days=5)
+ax.set_xlim(left=left, right=right)
+
+ax.xaxis.set_major_locator(months)
+ax.xaxis.set_minor_locator(days)
 ax.xaxis.set_major_formatter(yearsFmt)
 ax.format_xdata = mdates.DateFormatter('%Y-%m-%d')
-ax.axhline(0)
 
 fig.tight_layout()
 fig.subplots_adjust(hspace=0)
 fig.autofmt_xdate()
 plt.xlabel('Date')
-plt.ylabel('Price')
+
 plt.legend()
 plt.show()
-
-
-
-
-
-
-
+#
+#
+# start_money = 100000.
+# current_money = start_money
+# shares = 0.
+# for i, current_adjusted_close in enumerate(df['adjusted_close']):
+#     if i > 0:
+#         #buy signal
+#         if dates[i] in mins_dates:
+#             buying = np.floor(current_money / current_adjusted_close)
+#             shares += buying
+#             current_money -= buying * current_adjusted_close
+#         elif dates[i] in maxes_dates:
+#             current_money += current_adjusted_close * shares
+#             shares = 0
+#
+# #sell all of our shares left over at the current price to get the value at the end
+# end_price = df['adjusted_close'][df.index[-1]]
+# extra_money = shares * end_price
+# current_money += extra_money
+#
+# #calculate buy and hold
+# start_price = df['adjusted_close'].loc[0]
+# start_shares = np.floor(start_money / start_price)
+# bnh_current_money = start_money - (start_shares * start_price)
+# end_money = end_price * start_shares
+# end_money += bnh_current_money
+#
+#
+# print("Perfect Trading: $" + str(current_money))
+# print("Buy and Hold: $" + str(end_money))
+# diff = current_money - end_money
+# print("Perfect vs Buy and Hold: " + "+"+str(diff) if diff > 0 else diff )
+# print("Profit: " + (str(current_money - start_money)))
+# print("Number of Trades: " + str(len(mins_dates) + len(maxes_dates)))

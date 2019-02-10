@@ -64,7 +64,6 @@ class AlphaVantage:
         self.apikey = apikey
         self.rpm = 0
         self.db = Db(cache_folder)
-        self.mem = {}
         self.queue = Queue()
         self.pool = Pool(initializer=pool_init, initargs=(self.queue,), processes=os.cpu_count())
 
