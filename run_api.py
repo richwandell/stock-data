@@ -22,16 +22,16 @@ if __name__ == '__main__':
         twitter_handles = config['twitter_handles']
         alpha_vantage_rpm = config["alphavantage"]["requests_per_minute"]
 
-    # news = NewsAPI(news_apikey)
-    # for handle in twitter_handles.keys():
-    #     news.load_symbol(handle)
-    #
-    # twitter = Twitter(twitter_handles=twitter_handles, consumer_key=twitter_consumer_key,
-    #                   consumer_secret=twitter_consumer_secret, product=twitter_product,
-    #                   environment=twitter_environment)
-    #
-    # for handle in twitter_handles.keys():
-    #     twitter.load_symbol(handle)
+    news = NewsAPI(news_apikey)
+    for handle in twitter_handles.keys():
+        news.load_symbol(handle)
+
+    twitter = Twitter(twitter_handles=twitter_handles, consumer_key=twitter_consumer_key,
+                      consumer_secret=twitter_consumer_secret, product=twitter_product,
+                      environment=twitter_environment)
+
+    for handle in twitter_handles.keys():
+        twitter.load_symbol(handle)
 
     alpha_vantage = AlphaVantage(alpha_vantage_apikey, requests_per_minute=alpha_vantage_rpm)
     db = Db()

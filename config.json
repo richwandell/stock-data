@@ -109,6 +109,46 @@
         "SYMC",
         "SNPS"
       ]
+    },
+    {
+      "name": "S&P Suggested",
+      "symbols": [
+        "AVGO",
+        "DLTR",
+        "RHT",
+        "NEM"
+      ]
+    },
+    {
+      "name": "Communication Services",
+      "symbols": [
+        "IPG",
+        "OMC",
+        "CBS",
+        "DISCA",
+        "DISCK",
+        "CHTR",
+        "CMCSA",
+        "DISH",
+        "T",
+        "CTL",
+        "VZ",
+        "ATVI",
+        "EA",
+        "TTWO",
+        "GOOGL",
+        "GOOG",
+        "FB",
+        "TWTR",
+        "TRIP",
+        "NFLX",
+        "FOXA",
+        "FOX",
+        "VIAB",
+        "DIS",
+        "NWSA",
+        "NWS"
+      ]
     }
   ],
   "twitter_handles": {

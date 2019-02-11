@@ -21,11 +21,6 @@ export default class Nav extends Component {
                     </li>
                     <li className={"nav-item"}>
                         <a href="#"
-                           onClick={() => this.props.actions.pageClicked(PAGES.FUNDAMENTAL)}
-                           className={"nav-link " + (this.props.page === PAGES.FUNDAMENTAL ? "active" : "")}> Fundamental Analysis</a>
-                    </li>
-                    <li className={"nav-item"}>
-                        <a href="#"
                            onClick={() => this.props.actions.pageClicked(PAGES.TECHNICAL)}
                            className={"nav-link " + (this.props.page === PAGES.TECHNICAL ? "active" : "")}> Technical Analysis</a>
                     </li>

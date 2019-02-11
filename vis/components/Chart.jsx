@@ -150,6 +150,15 @@ export default class Chart extends React.Component {
         let maxSharpePoint = [];
         let sharpePortfolio = [];
         let efficientPortfolioStrings = [];
+        let minVariance = Infinity;
+        let minVarianceIndex = Infinity;
+        for(let i = 0; i < portfolios.length; i++){
+            if(portfolios[i][0] < minVariance) {
+                minVarianceIndex = i;
+                minVariance = portfolios[i][0];
+            }
+        }
+        portfolios = portfolios.slice(minVarianceIndex, portfolios.length);
         for (let i = 0; i < portfolios.length; i++) {
             data1.push({
                 name: 'Portfolio ' + i,
