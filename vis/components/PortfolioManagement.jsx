@@ -1,12 +1,19 @@
+// @flow
 import React from "react";
 import Chart from "./Chart";
 import Table from "./Table";
 import {perc} from "../Utils";
 import PieChart from "./PieChart";
+import type {PMProps, PMState} from "../types";
+declare var $;
 
-export default class PortfolioManagement extends React.Component {
+export default class PortfolioManagement extends React.Component<PMProps, PMState> {
 
-    constructor(props) {
+    actions: {
+        portfolioPercChanged: Function
+    };
+
+    constructor(props: PMProps) {
         super(props);
         this.state = {
             error: false,
@@ -18,7 +25,7 @@ export default class PortfolioManagement extends React.Component {
         };
     }
 
-    portfolioPercChanged(perc) {
+    portfolioPercChanged(perc: number) {
         this.setState({
             portfolio_perc: perc
         });
@@ -48,7 +55,7 @@ export default class PortfolioManagement extends React.Component {
 
 
         return (
-            <div className={"scrollable container-fluid"}>
+            <div className={"page-portfolio-management"}>
                 <div className={"row"}>
                     <div id={"chart-container"}>
                         <Chart

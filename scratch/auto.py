@@ -2,7 +2,7 @@ import sys
 
 import ta
 
-from auto_trading import MACDAutoTrader, SVMAutoTrader, MLPAutoTrader, PerfectAutoTrader
+from auto_trading import MACDAutoTrader, SVMAutoTrader, MLPAutoTrader, PerfectAutoTrader, KerasConvAutoTrader
 from auto_trading.AutoTrader import calculate_profit
 
 sys.path.append("..")
@@ -10,11 +10,14 @@ from utils.db.Db import Db
 from sklearn.metrics import classification_report
 
 db = Db("../cache")
-df = db.get_symbols_as_dataframe(['AAPL'])
+df = db.get_symbols_as_dataframe(['AVGO'])
 df = ta.add_all_ta_features(df, "open", "high", "low", "adjusted_close", "volume")
 
 perf = PerfectAutoTrader(df, close="adjusted_close")
 perfect_trades = perf.get_trades()
+
+conv = KerasConvAutoTrader(df, close="adjusted_close")
+conv_trades = conv.get_trades()
 
 macd = MACDAutoTrader(df, close="adjusted_close")
 macd_trades = macd.get_trades()

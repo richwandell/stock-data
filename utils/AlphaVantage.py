@@ -65,7 +65,7 @@ class AlphaVantage:
         self.rpm = 0
         self.db = Db(cache_folder)
         self.queue = Queue()
-        self.pool = Pool(initializer=pool_init, initargs=(self.queue,), processes=os.cpu_count())
+        self.pool = Pool(initializer=pool_init, initargs=(self.queue,), processes=2)
 
     def _load_symbols(self, portfolio: dict):
         if "symbols" not in portfolio: raise Exception("Missing symbols")

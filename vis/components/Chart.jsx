@@ -15,7 +15,7 @@ export default class Chart extends React.Component {
         this.res = {};
         this.res[this.props.portfolio.name] = await this.getData();
         this.renderChart(this.res[this.props.portfolio.name]);
-        this.props.actions.portfolioClicked(this.sharpePortfolio);
+        this.props.actions.setPortfolio(this.sharpePortfolio);
     }
 
     async componentDidUpdate() {
@@ -24,7 +24,7 @@ export default class Chart extends React.Component {
         } else {
             this.res[this.props.portfolio.name] = await this.getData();
             this.renderChart(this.res[this.props.portfolio.name]);
-            this.props.actions.portfolioClicked(this.sharpePortfolio);
+            this.props.actions.setPortfolio(this.sharpePortfolio);
         }
     }
 
@@ -240,7 +240,7 @@ export default class Chart extends React.Component {
                         portfolio.symbols = efficientSymbols;
                         portfolio.allocations = portfolios[this.index].slice(3);
                         portfolio.risk_return_sharpe = portfolios[this.index].slice(0, 3);
-                        actions.portfolioClicked(portfolio);
+                        actions.setPortfolio(portfolio);
                     }
                 }
             }

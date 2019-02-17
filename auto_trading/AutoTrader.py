@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from datetime import timedelta
 
 
 class AutoTrader:
@@ -37,6 +38,9 @@ class AutoTrader:
                         'momentum_tsi',
                         'momentum_uo', 'momentum_stoch', 'momentum_stoch_signal', 'momentum_wr', 'momentum_ao',
                         'make_a_trade']
+
+    def get_trades(self, time_delta=timedelta(days=365)) -> pd.DataFrame:
+        raise Exception("Not Implemented")
 
 
 def calculate_profit(df: pd.DataFrame, trades: pd.DataFrame, close='close', date_time='date_time', start_money=1000)->tuple:
