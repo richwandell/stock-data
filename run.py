@@ -47,6 +47,13 @@ def get_all_portfolios(portfolio):
                 port = p
                 break
 
+    if len(port) == 0:
+        snp = pd.read_csv("cache/s&p500_companies.csv")
+        port = {
+            "name": portfolio,
+            "symbols": list(snp[snp['GICS Sector'] == portfolio]['Symbol'])
+        }
+
     symbol_string = "_".join(port["symbols"])
     portfolio_key = hashlib.md5(symbol_string.encode("utf8")).hexdigest()
 
@@ -106,6 +113,26 @@ def get_snp_portfolios():
         pass
 
     data = json.dumps(return_data)
+
+    resp = Response(data)
+    resp.headers['Content-Type'] = 'application/json'
+    return resp
+
+
+@app.route("/portfolios/get/snpPortfolios", methods=['POST'])
+def get_all_snp_portfolios():
+    snp = pd.read_csv("cache/s&p500_companies.csv")
+    sub_industries = snp['GICS Sector'].unique()
+
+    portfolios = []
+    for ind in sub_industries:
+        portfolio = {
+            "name": ind,
+            "symbols": list(snp[snp['GICS Sector'] == ind]['Symbol'])
+        }
+        portfolios.append(portfolio)
+
+    data = json.dumps(portfolios)
 
     resp = Response(data)
     resp.headers['Content-Type'] = 'application/json'

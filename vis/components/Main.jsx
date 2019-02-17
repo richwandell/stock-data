@@ -1,7 +1,7 @@
 // @flow
 import React from "react";
 import PortfolioManagement from "./PortfolioManagement";
-import {PAGES} from "../constants";
+import {PAGES, PORTFOLIO_TYPES as PF} from "../constants";
 import {Nav1, Nav2} from "./Nav";
 import TechnicalAnalysis from "./TechnicalAnalysis";
 import type {MainProps, MainState, Portfolio, Actions} from "../types";
@@ -10,26 +10,46 @@ declare var $;
 export default class Main extends React.Component<MainProps, MainState> {
 
     portfolios: Array<Portfolio>;
+    snpPortfolios: Array<Portfolio>;
     actions: Actions;
 
     constructor(props: MainProps) {
         super(props);
         this.portfolios = props.config.portfolios;
+        this.snpPortfolios = props.snpPortfolios;
         this.state = {
             page: PAGES.PORTFOLIO,
             selected_portfolio: props.config.portfolios[0],
-            selected_symbol: props.config.portfolios[0].symbols[0]
+            selected_symbol: props.config.portfolios[0].symbols[0],
+            selected_portfolio_type: PF.MINE
         };
 
         this.actions = {
-            setPortfolio: (p) => this.setPortfolio(p),
-            pageClicked: (p) => this.pageClicked(p),
-            portfolioSelected: (p) => this.portfolioSelected(p)
+            setPortfolio: (p: Portfolio) => this.setPortfolio(p),
+            pageClicked: (p: string) => this.pageClicked(p),
+            portfolioSelected: (p: string) => this.portfolioSelected(p),
+            portfolioTypeSelected: (type: string) => this.portfolioTypeSelected(type)
         };
     }
 
+    portfolioTypeSelected(type: string) {
+        let selected = this.portfolios[0];
+        if(type === PF.SNP) {
+            selected = this.snpPortfolios[0];
+        }
+        this.setState({
+            selected_portfolio_type: type,
+            selected_portfolio: selected
+        });
+    }
+
     portfolioSelected(portfolio: string) {
-        let p = this.portfolios.find((i) => i.name === portfolio);
+        let p;
+        if(this.state.selected_portfolio_type === PF.MINE) {
+            p = this.portfolios.find((i) => i.name === portfolio);
+        } else {
+            p = this.snpPortfolios.find((i) => i.name === portfolio);
+        }
         this.setState({
             selected_portfolio: p
         });
@@ -56,13 +76,15 @@ export default class Main extends React.Component<MainProps, MainState> {
                 <Nav1
                     selected_portfolio={this.state.selected_portfolio}
                     actions={this.actions}
-                    config={this.props.config}
+                    portfolios={this.state.selected_portfolio_type === PF.MINE ?
+                    this.portfolios : this.snpPortfolios}
                     page={this.state.page}/>
 
                 <Nav2
                     selected_portfolio={this.state.selected_portfolio}
                     actions={this.actions}
-                    config={this.props.config}
+                    portfolios={this.state.selected_portfolio_type === PF.MINE ?
+                    this.portfolios : this.snpPortfolios}
                     page={this.state.page}/>
 
                 <div className="row">

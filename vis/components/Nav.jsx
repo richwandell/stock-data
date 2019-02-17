@@ -1,6 +1,6 @@
 // @flow
 import React, {Component} from "react";
-import {PAGES} from "../constants";
+import {PAGES, PORTFOLIO_TYPES} from "../constants";
 import type {NavProps} from "../types";
 
 export class Nav1 extends Component<NavProps> {
@@ -38,8 +38,8 @@ export class Nav2 extends Component<NavProps> {
                             id={"portfolio-type-selector"}
                             onChange={(e) => this.props.actions.portfolioTypeSelected(e.target.value)}
                             className={"form-control"}>
-                            <option value={"mine"}>My Portfolios</option>
-                            <option value={"snp500"}>S&P 500</option>
+                            <option value={PORTFOLIO_TYPES.MINE}>My Portfolios</option>
+                            <option value={PORTFOLIO_TYPES.SNP}>S&P 500</option>
                         </select>
                     </div>,
                     <label key="nav2-label2" htmlFor={"portfolio-selector"} className={"col-1 col-form-label"}>
@@ -50,7 +50,7 @@ export class Nav2 extends Component<NavProps> {
                             id={"portfolio-type-selector"}
                             onChange={(e) => this.props.actions.portfolioSelected(e.target.value)}
                             className="form-control">
-                            {this.props.config.portfolios.map((p, i) => <option
+                            {this.props.portfolios.map((p, i) => <option
                                 key={"nav-" + p + i}
                                 className={"nav-item"}
                                 value={p.name} >{p.name}</option>)}

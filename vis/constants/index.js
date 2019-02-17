@@ -4,4 +4,9 @@ const PAGES = {
     FUNDAMENTAL: "fundamental_analysis"
 };
 
-export {PAGES};
+const PORTFOLIO_TYPES = {
+    MINE: "mine",
+    SNP: "snp_500"
+};
+
+export {PAGES, PORTFOLIO_TYPES};

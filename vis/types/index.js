@@ -3,6 +3,7 @@ type Config = {
 };
 
 type MainProps = {
+    snpPortfolios: Array<Portfolio>,
     config: {
         portfolios: Array<Portfolio>
     }
@@ -14,9 +15,10 @@ type MainState = {
 };
 
 type Actions = {
-    setPortfolio: Function,
-    pageClicked: Function,
-    portfolioSelected: Function
+    setPortfolio: (Portfolio),
+    pageClicked: (string),
+    portfolioSelected: (string),
+    portfolioTypeSelected: (string)
 };
 
 type Portfolio = {
@@ -29,7 +31,7 @@ type Portfolio = {
 type NavProps = {
     page: string,
     actions: Actions,
-    config: Config
+    portfolios: Array<Portfolio>
 };
 
 type PMProps = {

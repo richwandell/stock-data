@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=480, initial-scale=1">
-    <title>Title</title>
+    <title>Asset Manager</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
           integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ url_for('static', filename='scripts/handsontable/handsontable.full.css') }}"/>
@@ -11,9 +11,11 @@
 </head>
 <body>
 <div id="react_renderer">
-    <div id="loading" class=" d-flex align-items-center">
-        <strong>Loading...</strong>
-        <div class="text-primary spinner-border ml-auto" role="status" aria-hidden="true"></div>
+    <div id="loading">
+        <div class=" d-flex align-items-center">
+            <strong>Loading...</strong>
+            <div class="text-primary spinner-border ml-auto" role="status" aria-hidden="true"></div>
+        </div>
     </div>
 </div>
 </body>
