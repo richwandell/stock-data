@@ -6,6 +6,7 @@ from utils.db.CreateStatements import CreateStatements
 from utils.db.InsertStatements import InsertStatements
 from utils.db.SelectStatements import SelectStatements
 from utils.db.UpdateStatements import UpdateStatements
+from utils.db.json_functions import json_extract
 
 
 class Db(CreateStatements, InsertStatements, SelectStatements, UpdateStatements):
@@ -27,6 +28,7 @@ class Db(CreateStatements, InsertStatements, SelectStatements, UpdateStatements)
         self.conn.execute(self.CREATE_TWITTER_SENTIMENT_INDEX)
         self.conn.execute(self.CREATE_NEWS_API)
         self.conn.execute(self.CREATE_NEWS_API_INDEX)
+        self.conn.create_function("json_extract", 2, json_extract)
 
     def insert_alpha_vantage_records(self, records: list)->None:
         cur = self.conn.cursor()

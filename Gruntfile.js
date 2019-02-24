@@ -105,10 +105,23 @@ module.exports = function (grunt) {
                     expand: true
                 }]
             },
+        },
+        exec: {
+            run_api: {
+                cmd: "python cron/run_api.py"
+            },
+            download_snp: {
+                cmd: "python cron/download_snp.py"
+            },
+            compute_snp: {
+                cmd: "python cron/compute_snp500.py"
+            }
         }
     });
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-webpack');
     grunt.loadNpmTasks('grunt-contrib-less');
+    grunt.loadNpmTasks('grunt-exec');
+
 };

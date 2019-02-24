@@ -1,7 +1,5 @@
 import sys
-
 import ta
-
 from auto_trading import MACDAutoTrader, SVMAutoTrader, MLPAutoTrader, PerfectAutoTrader, KerasConvAutoTrader
 from auto_trading.AutoTrader import calculate_profit
 

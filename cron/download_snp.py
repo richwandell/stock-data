@@ -1,6 +1,8 @@
-import json, os
+import json, os, sys
 import numpy as np
 import matplotlib.pyplot as plt
+project_root = os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + "/../")
+sys.path.append(project_root)
 from utils import AlphaVantage, Db
 import hashlib, time
 import pandas as pd
