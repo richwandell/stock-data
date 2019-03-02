@@ -3,4 +3,3 @@ from .MACDAutoTrader import MACDAutoTrader
 from .SVMAutoTrader import *
 from .MLPAutoTrader import *
 from .PerfectAutoTrader import *
-from .KerasConvAutoTrader import KerasConvAutoTrader

@@ -57,25 +57,28 @@ df_source['date_time'] = pd.to_datetime(df_source['date_time'])
 df_source = df_source.set_index('date_time')
 df = df_source[df_source['symbol'] == target].copy()
 df = ta.add_all_ta_features(df, "open", "high", "low", "adjusted_close", "volume", fillna=True)
-columns = AutoTrader.columns
-columns.pop()
-df = df[columns]
-mins = argrelextrema(df['adjusted_close'].as_matrix(), np.less, order=5)
 dates = df.index
+mins = argrelextrema(df['adjusted_close'].as_matrix(), np.less, order=5)
 mins_dates = dates[mins[0]]
 maxes = argrelextrema(df['adjusted_close'].as_matrix(), np.greater, order=5)
 maxes_dates = dates[maxes[0]]
-
-df = df.set_index('date_time')
 df['make_a_trade'] = 0
 df['make_a_trade'][mins_dates] = 1
 df['make_a_trade'][maxes_dates] = 2
+
+columns = AutoTrader.columns
+df = df[columns]
+
 for symbol in others:
     next_df = df_source[df_source['symbol'] == symbol].copy()
     next_df = ta.add_all_ta_features(next_df, "open", "high", "low", "adjusted_close", "volume", fillna=True)
+    next_df.pop("symbol")
+    columns = AutoTrader.columns
+    columns.pop()
+    next_df = next_df[columns]
     df = df.join(next_df, how='inner', rsuffix='_' + symbol)
 
-
+mat = df.pop('make_a_trade')
+df['make_a_trade'] = mat
 print("hi")
-# df = db.get_symbols_as_dataframe(['AVGO'])
-# df = ta.add_all_ta_features(df, "open", "high", "low", "adjusted_close", "volume")
+
