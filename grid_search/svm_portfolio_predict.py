@@ -4,7 +4,8 @@ from sklearn.svm import SVC
 
 sys.path.append("..")
 from sklearn.neural_network import MLPClassifier
-from utils.portfolio_predict_utils import make_max_sharpe_dataset, make_training_testing_datasets, plot
+from utils.portfolio_predict_utils import make_max_sharpe_dataset, make_training_testing_datasets, plot, \
+    make_sector_dataset
 from sklearn import metrics
 from sklearn.model_selection import GridSearchCV
 import numpy as np
@@ -20,9 +21,9 @@ if __name__ == "__main__":
         including buy and sell signals for target symbol.
     5. Train Keras Conv net to predict by and sell signals
     """
-    df, df_source, dates, maxes_dates, maxes_vals, mins_dates, mins_vals, target = make_max_sharpe_dataset()
+    sd = make_sector_dataset()
     # data is now fully collected for all assets in the portfolio including
-    x_train_scaled, y_train, x_test_scaled, x_test, y_test, testing_data = make_training_testing_datasets(df)
+    ttd = make_training_testing_datasets(sd.df)
 
     # model = MLPClassifier(
     #     max_iter=50,
@@ -50,15 +51,19 @@ if __name__ == "__main__":
     clf = GridSearchCV(
         model,
         {
-            "kernel": ['poly', 'rbf', 'sigmoid'],
-            "C": [0.1, 1.0],
-            "degree": [3, 5, 7],
+            "kernel": ['poly'],
+            "C": [0.01],
+            "degree": [7],
+            "class_weight": [
+                {0: 3, 1: 100, 2: 100},
+                {0: 5, 1: 100, 2: 100}
+            ],
             #             # "gamma": ['auto', 1, 10]
         },
         n_jobs=14,
         verbose=True
     )
-    clf.fit(x_train_scaled, y_train)
+    clf.fit(ttd.x_train_scaled, ttd.y_train)
     # Best paramete set
     print('Best parameters found:\n', clf.best_params_)
 
@@ -71,11 +76,11 @@ if __name__ == "__main__":
     # model = SVC(kernel='rbf', class_weight='balanced', degree=)
     # model.fit(x_train_scaled, y_train)
 
-    test_output = clf.predict(x_test_scaled).tolist()
-    test_dates = dates[-len(testing_data):].tolist()
+    test_output = clf.predict(ttd.x_test_scaled).tolist()
+    test_dates = sd.dates[-len(ttd.testing_data):].tolist()
 
-    print(metrics.classification_report(y_test, test_output))
-    print(metrics.confusion_matrix(y_test, test_output))
+    print(metrics.classification_report(ttd.y_test, test_output))
+    print(metrics.confusion_matrix(ttd.y_test, test_output))
 
-    plot(df_source, dates, target, maxes_dates, maxes_vals, mins_dates, mins_vals, test_dates, test_output)
+    plot(sd, test_dates, test_output)
 

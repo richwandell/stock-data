@@ -60,6 +60,28 @@ class SelectStatements:
         where symbol in (%(symbols)s)    
         group by symbol, strftime('%%Y-%%m-%%d', date_time, 'unixepoch')
         """
+    SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS_TEN_YEAR = """
+        select 
+            symbol,
+            strftime('%%Y-%%m-%%d', date_time, 'unixepoch') as date_time,
+            date_time as unix_time,
+            adjusted_close,
+            `close`,
+            high,
+            low,
+            `open`,
+            volume         
+        from alpha_vantage_prices ap
+        where symbol in (%(symbols)s)    
+        group by symbol, strftime('%%Y-%%m-%%d', date_time, 'unixepoch')
+    """
+    SELECT_SYMBOLS_WITH_TEN_YEARS = """
+    select
+      distinct symbol
+    from alpha_vantage_prices
+    where symbol in (%(symbols)s)
+    and strftime('%%Y-%%m-%%d', date_time, 'unixepoch') = date('now', '-10 year');
+    """
     GET_MONTHLY_PORTFOLIO_STATS = """
         select portfolio_data from monthly_portfolio_stats where portfolio_key = ?
         """

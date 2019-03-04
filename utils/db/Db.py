@@ -1,6 +1,7 @@
 import sqlite3, datetime, json
 import pandas as pd
 import numpy as np
+from typing import Tuple
 
 from utils.db.CreateStatements import CreateStatements
 from utils.db.InsertStatements import InsertStatements
@@ -47,6 +48,14 @@ class Db(CreateStatements, InsertStatements, SelectStatements, UpdateStatements)
         cur.execute(self.SELECT_ALPHA_VANTAGE_API_REQUESTS, [today_timestamp, symbol])
         one = cur.fetchone()
         return one is not None
+
+    def get_symbols_ten_year(self, symbols)->Tuple[pd.DataFrame, list]:
+        query = self.SELECT_SYMBOLS_WITH_TEN_YEARS % {"symbols": "'" + "','".join(symbols) + "'"}
+        cur = self.conn.cursor()
+        cur.execute(query)
+        all = list([x[0] for x in cur.fetchall()])
+        query = self.SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS_TEN_YEAR % {"symbols": "'" + "','".join(all) + "'"}
+        return pd.read_sql_query(query, con=self.conn), all
 
     def get_symbols_as_dataframe(self, symbols)->pd.DataFrame:
         query = self.SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS % {"symbols": "'" + "','".join(symbols) + "'"}

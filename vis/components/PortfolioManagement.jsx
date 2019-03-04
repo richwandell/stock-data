@@ -47,9 +47,9 @@ export default class PortfolioManagement extends React.Component<PMProps, PMStat
                     allocation: this.props.selected_portfolio.allocations[i]
                 })
             }
-            risk = perc(this.props.selected_portfolio.risk_return_sharpe[0]);
-            ret = perc(this.props.selected_portfolio.risk_return_sharpe[1]);
-            sharpe = perc(this.props.selected_portfolio.risk_return_sharpe[2]);
+            risk = perc(this.props.selected_portfolio.risk_return_sharpe[0]) + "%";
+            ret = perc(this.props.selected_portfolio.risk_return_sharpe[1]) + "%";
+            sharpe = this.props.selected_portfolio.risk_return_sharpe[2].toFixed(2);
         }
 
 
