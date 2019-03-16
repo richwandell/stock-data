@@ -34,7 +34,7 @@ if __name__ == "__main__":
         including buy and sell signals for target symbol.
     5. Train Keras Conv net to predict by and sell signals
     """
-    sd = make_sector_dataset()
+    sd = make_max_sharpe_dataset()
     # data is now fully collected for all assets in the portfolio including
     ttd = make_training_testing_datasets(sd.df)
     x_train, x_test, input_shape = ttd.as_conv()
@@ -43,30 +43,21 @@ if __name__ == "__main__":
             optimizer='adam'
     ):
         model = Sequential()
-        model.add(Conv2D(128, kernel_size=(5, 5), activation='relu', input_shape=input_shape))
-        model.add(MaxPooling2D())
-        model.add(Conv2D(128, (5, 5)))
-        model.add(BatchNormalization())
-        model.add(Activation("relu"))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Conv2D(64, (5, 5)))
-        model.add(BatchNormalization())
-        model.add(Activation("relu"))
-        model.add(Conv2D(64, (3, 3), activation='relu'))
+        model.add(Conv2D(128, kernel_size=(3, 3), activation='relu', input_shape=input_shape))
         model.add(MaxPooling2D())
         model.add(Flatten())
         model.add(Dense(700, activation='relu'))
-        model.add(Dense(1, activation='softmax'))
+        model.add(Dense(3, activation='softmax'))
         print(model.summary())
         model.compile(
-            loss='mean_squared_error',
+            loss='categorical_crossentropy',
             optimizer=optimizer,
             metrics=['accuracy']
         )
         return model
 
 
-    model = KerasRegressor(
+    model = KerasClassifier(
         build_fn=create_model,
         verbose=True,
         class_weight="balanced"
@@ -76,7 +67,13 @@ if __name__ == "__main__":
         {
             "optimizer": ['SGD'],
             # "hidden_layer_size": [700],
+            "class_weight": [
+                "balanced",
+                {0: 1, 1: 5, 2: 5},
+                {0: 1, 1: 10, 2: 10},
+            ],
         },
+        scoring='f1_macro',
         n_jobs=1,
         verbose=True
     )
@@ -94,9 +91,9 @@ if __name__ == "__main__":
     test_output = test_output.ravel()
     test_dates = sd.dates[-len(ttd.testing_data):].tolist()
 
-    print(metrics.regression.mean_absolute_error(ttd.y_test, test_output))
-    print(metrics.regression.mean_absolute_error(ttd.y_test, test_output))
-    # print(metrics.classification_report(ttd.y_test, test_output))
-    # print(metrics.confusion_matrix(ttd.y_test, test_output))
+    # print(metrics.regression.mean_absolute_error(ttd.y_test, test_output))
+    # print(metrics.regression.mean_absolute_error(ttd.y_test, test_output))
+    print(metrics.classification_report(ttd.y_test, test_output))
+    print(metrics.confusion_matrix(ttd.y_test, test_output))
 
     plot(sd, test_dates, test_output)

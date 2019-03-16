@@ -62,7 +62,11 @@ class Db(CreateStatements, InsertStatements, SelectStatements, UpdateStatements)
         return pd.read_sql_query(query, con=self.conn)
 
     def get_monthly_symbols_as_dataframe(self, symbols)->pd.DataFrame:
-        query = self.GET_MONTHLY_SYMBOLS_AS_DATAFRAME % {"symbols": "'" + "','".join(symbols) + "'"}
+        query = self.SELECT_SYMBOLS_WITH_TEN_YEARS % {"symbols": "'" + "','".join(symbols) + "'"}
+        cur = self.conn.cursor()
+        cur.execute(query)
+        all = list([x[0] for x in cur.fetchall()])
+        query = self.GET_MONTHLY_SYMBOLS_AS_DATAFRAME % {"symbols": "'" + "','".join(all) + "'"}
         return pd.read_sql_query(query, con=self.conn)
 
     def save_monthly_portfolio_stats(self, key, asset_risk, asset_reward, assets):

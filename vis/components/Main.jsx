@@ -4,7 +4,7 @@ import PortfolioManagement from "./PortfolioManagement";
 import {PAGES, PORTFOLIO_TYPES as PF} from "../constants";
 import {Nav1, Nav2} from "./Nav";
 import TechnicalAnalysis from "./TechnicalAnalysis";
-import type {MainProps, MainState, Portfolio, Actions} from "../types";
+import type {MainProps, MainState, Portfolio, Actions, PortfolioAllocation} from "../types";
 declare var $;
 
 export default class Main extends React.Component<MainProps, MainState> {
@@ -28,8 +28,15 @@ export default class Main extends React.Component<MainProps, MainState> {
             setPortfolio: (p: Portfolio) => this.setPortfolio(p),
             pageClicked: (p: string) => this.pageClicked(p),
             portfolioSelected: (p: string) => this.portfolioSelected(p),
-            portfolioTypeSelected: (type: string) => this.portfolioTypeSelected(type)
+            portfolioTypeSelected: (type: string) => this.portfolioTypeSelected(type),
+            symbolClicked: (pa: PortfolioAllocation) => this.symbolClicked(pa)
         };
+    }
+
+    symbolClicked(pa: PortfolioAllocation) {
+        this.setState({
+            page: PAGES.TECHNICAL
+        });
     }
 
     portfolioTypeSelected(type: string) {
@@ -61,7 +68,6 @@ export default class Main extends React.Component<MainProps, MainState> {
         })
     }
 
-
     setPortfolio(p: Portfolio) {
         let portfolio = $.extend({}, this.state.selected_portfolio, p);
 
@@ -80,12 +86,13 @@ export default class Main extends React.Component<MainProps, MainState> {
                     this.portfolios : this.snpPortfolios}
                     page={this.state.page}/>
 
+                {this.state.page === PAGES.PORTFOLIO &&
                 <Nav2
                     selected_portfolio={this.state.selected_portfolio}
                     actions={this.actions}
                     portfolios={this.state.selected_portfolio_type === PF.MINE ?
                     this.portfolios : this.snpPortfolios}
-                    page={this.state.page}/>
+                    page={this.state.page}/>}
 
                 <div className="row">
 

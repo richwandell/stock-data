@@ -57,8 +57,8 @@ class TrainTestData:
         self.x_train_scaled = x_train_scaled
 
     def as_conv(self)->Tuple[np.array, np.array, Tuple[int, int, int]]:
-        x_train = self.x_train_scaled.astype(np.float32)
-        x_test = self.x_test_scaled.astype(np.float32)
+        x_train = self.x_train_scaled
+        x_test = self.x_test_scaled
         stride = len(AutoTrader.columns) - 1
         train_height = int(len(x_train[0]) / stride)
         test_height = int(len(x_test[0]) / stride)
@@ -156,6 +156,12 @@ def make_sector_dataset(target="AAPL")->Dataset:
     sector_name = snp[snp['Symbol'] == target]['GICS Sector'].as_matrix()[0]
     sector = snp[snp['GICS Sector'] == sector_name].as_matrix()
     return make_dataset(db, list(sector[:, 1]), target)
+
+
+def get_snp_ten_year()->Tuple[pd.DataFrame, list]:
+    db = Db("../cache")
+    snp = pd.read_csv("../cache/s&p500_companies.csv").as_matrix()
+    return db.get_symbols_ten_year(list(snp[:, 1]))
 
 
 def pool_init(queue):

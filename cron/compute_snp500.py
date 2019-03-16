@@ -34,6 +34,7 @@ if __name__ == '__main__':
         asset_risk, asset_reward, assets = alpha_vantage.get_monthly_portfolio_stats(portfolio)
         db.save_monthly_portfolio_stats(portfolio_key + "_monthly", asset_risk, asset_reward, assets)
 
+
     print("finished")
 
 

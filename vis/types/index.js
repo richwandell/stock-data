@@ -18,7 +18,8 @@ type Actions = {
     setPortfolio: (Portfolio),
     pageClicked: (string),
     portfolioSelected: (string),
-    portfolioTypeSelected: (string)
+    portfolioTypeSelected: (string),
+    symbolClicked: (PortfolioAllocation)
 };
 
 type Portfolio = {
@@ -45,5 +46,15 @@ type PMState = {
     portfolio_perc: number
 };
 
+type PortfolioAllocation = {
+    asset: string,
+    allocation: number
+};
+
+type TableProps = {
+    data: Array<PortfolioAllocation>,
+    actions: Actions
+};
+
 export {MainProps, Portfolio, MainState, Actions, Config, NavProps,
-PMProps, PMState};
+PMProps, PMState, PortfolioAllocation, TableProps};

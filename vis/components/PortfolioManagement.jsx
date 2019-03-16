@@ -52,19 +52,29 @@ export default class PortfolioManagement extends React.Component<PMProps, PMStat
             sharpe = this.props.selected_portfolio.risk_return_sharpe[2].toFixed(2);
         }
 
-
+        let sharpeColor = sharpe > 2 ? {
+            color: "lime",
+            "textShadow": "1px 1px 1px black"
+        } : {
+            color: "red",
+            "textShadow": "1px 1px 1px black"
+        };
 
         return (
             <div className={"page-portfolio-management"}>
                 <div className={"row"}>
-                    <div id={"chart-container"}>
-                        <Chart
-                            actions={this.props.actions}
-                            portfolio={this.props.selected_portfolio}/>
+                    <div className={"col-4"}>
+                        Risk <span id={"current-risk"}>{risk}</span>
+                    </div>
+                    <div className={"col-4"}>
+                        Return <span id={"current-return"}>{ret}</span>
+                    </div>
+                    <div className={"col-4"}>
+                        Sharpe Ratio <span style={sharpeColor} id={"current-sharpe"}>{sharpe}</span>
                     </div>
                 </div>
                 <div className={"row"}>
-                    <div id={"table-container"}>
+                    <div id={"table-container"} className={"col-5"}>
                         <Table
                             actions={$.extend({}, this.props.actions, this.actions)}
                             data={tableData}/>
@@ -75,27 +85,19 @@ export default class PortfolioManagement extends React.Component<PMProps, PMStat
                                     <PieChart tableData={tableData} />
                                 </li>
                                 <li>
-                                    Risk <span id={"current-risk"}>{risk}</span>
-                                </li>
-                                <li>
-                                    Return <span id={"current-return"}>{ret}</span>
-                                </li>
-                                <li>
-                                    Sharpe Ratio <span id={"current-sharpe"}>{sharpe}</span>
-                                </li>
-
-                                <li>
                                     <div className="btn-group-vertical">
                                         <button
                                             type={"button"}
                                             className={"btn btn-primary"}>Show Max Sharpe Ratio</button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-primary">Calculate Portfolio</button>
                                     </div>
                                 </li>
                             </ul>
                         </div>
+                    </div>
+                    <div id={"chart-container"} className={"col-7"}>
+                        <Chart
+                            actions={this.props.actions}
+                            portfolio={this.props.selected_portfolio}/>
                     </div>
                 </div>
             </div>

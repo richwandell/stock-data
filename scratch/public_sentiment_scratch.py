@@ -16,8 +16,6 @@ from ta import add_all_ta_features
 db = Db("../cache")
 df = db.get_symbols_as_dataframe(['AAPL'])
 df['date_time'] = pd.to_datetime(df['date_time'])
-df = add_all_ta_features(df, "open", "high", "low", "close", "volume")
-df = df.dropna()
 
 tdf = db.get_daily_twitter_sentiment_as_dataframe(['AAPL'])
 tdf['date_time'] = pd.to_datetime(tdf['date_time'])
