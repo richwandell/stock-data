@@ -29,6 +29,20 @@ body {
       @import "styles/top_nav";
       @import "styles/page";
     }
+    .container-fluid.portfolio_management {
+      > .row:nth-child(2) {
+        border-bottom: 1px solid #8080803b;
+      }
+      > .row:nth-child(3) {
+        @import "styles/portfolio_management";
+      }
+    }
+    .container-fluid.technical_analysis{
+      #highstock-container {
+        width: 100%;
+        height: 914px;
+      }
+    }
   }
 
 }

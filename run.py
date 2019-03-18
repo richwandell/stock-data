@@ -1,9 +1,25 @@
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, g
 import json, hashlib
 from utils import AlphaVantage, Db
 import pandas as pd
 
 app = Flask(__name__)
+
+
+def get_db()->Db:
+    """Opens a new database connection if there is none yet for the
+    current application context.
+    """
+    if not hasattr(g, 'sqlite_db'):
+        g.sqlite_db = Db()
+    return g.sqlite_db
+
+
+@app.teardown_appcontext
+def close_db(error):
+    """Closes the database again at the end of the request."""
+    if hasattr(g, 'sqlite_db'):
+        g.sqlite_db.close()
 
 
 def get_alpha_vantage_creds():
@@ -32,7 +48,7 @@ def config():
 
 @app.route("/portfolios/get/<portfolio>", methods=['POST'])
 def get_all_portfolios(portfolio):
-    db = Db()
+    db = get_db()
     if portfolio == "S&P 500":
         snp = pd.read_csv("cache/s&p500_companies.csv")
         port = {
@@ -96,7 +112,7 @@ def get_snp_portfolios():
         "symbols": snp['Symbol'].as_matrix().tolist(),
         "name": "S&P 500"
     }
-    db = Db()
+    db = get_db()
     symbol_string = "_".join(portfolio["symbols"])
     portfolio_key = hashlib.md5(symbol_string.encode("utf8")).hexdigest()
 
@@ -134,6 +150,22 @@ def get_all_snp_portfolios():
 
     data = json.dumps(portfolios)
 
+    resp = Response(data)
+    resp.headers['Content-Type'] = 'application/json'
+    return resp
+
+
+@app.route("/stocks/get/<symbol>", methods=['POST'])
+def get_stocks_symbol(symbol: str):
+    db = get_db()
+    ten_years = db.get_symbols_ten_year([symbol])[0]
+    ten_years['unix_time'] = ten_years['unix_time'] * 1000
+    ten_years_ohlc = ten_years[['unix_time', 'open', 'high', 'low', 'close']].as_matrix()
+    ten_years_volume = ten_years[['unix_time', 'volume']].as_matrix()
+    data = json.dumps({
+        'ohlc': ten_years_ohlc.tolist(),
+        'volume': ten_years_volume.tolist()
+    })
     resp = Response(data)
     resp.headers['Content-Type'] = 'application/json'
     return resp

@@ -11,7 +11,8 @@ type MainProps = {
 
 type MainState = {
     page: string,
-    selected_portfolio: Portfolio
+    selected_portfolio: Portfolio,
+    selected_symbol: string
 };
 
 type Actions = {
@@ -56,5 +57,14 @@ type TableProps = {
     actions: Actions
 };
 
+type TAProps = {
+    selected_symbol: string
+};
+
+type StockHistory = {
+    ohlc: Array<[string, number, number, number]>,
+    volume: Array<[string, number]>
+};
+
 export {MainProps, Portfolio, MainState, Actions, Config, NavProps,
-PMProps, PMState, PortfolioAllocation, TableProps};
+PMProps, PMState, PortfolioAllocation, TableProps, TAProps, StockHistory};

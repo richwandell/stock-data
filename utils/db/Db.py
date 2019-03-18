@@ -2,10 +2,11 @@ import sqlite3, datetime, json
 import pandas as pd
 import numpy as np
 from typing import Tuple
+import mysql.connector
 
-from utils.db.CreateStatements import CreateStatements
-from utils.db.InsertStatements import InsertStatements
-from utils.db.SelectStatements import SelectStatements
+from utils.db.CreateStatements import CreateStatements, MySQLCreateStatements
+from utils.db.InsertStatements import InsertStatements, MySQLInsertStatements
+from utils.db.SelectStatements import SelectStatements, MySQLSelectStatements
 from utils.db.UpdateStatements import UpdateStatements
 from utils.db.json_functions import json_extract
 
@@ -13,23 +14,12 @@ from utils.db.json_functions import json_extract
 class Db(CreateStatements, InsertStatements, SelectStatements, UpdateStatements):
     DATE_KEY = '%Y-%m-%d'
 
-    def __init__(self, cache_folder="cache")->None:
-        self.conn = sqlite3.connect("%s/cache.sqlite3" % cache_folder)
-        self.conn.execute("PRAGMA journal_mode = WAL;")
-        self.conn.execute("PRAGMA cache_size = 4096000;")
-        self.conn.execute("PRAGMA optimize;")
-        self.conn.execute("PRAGMA busy_timeout = 150000;")
-        self.conn.execute(self.CREATE_ALPHA_VANTAGE_PRICES)
-        self.conn.execute(self.CREATE_ALPHA_VANTAGE_PRICES_INDEX)
-        self.conn.execute(self.CREATE_ALPHA_VANTAGE_PRICES_INDEX_1)
-        self.conn.execute(self.CREATE_ALPHA_VANTAGE_API_REQUESTS)
-        self.conn.execute(self.CREATE_MONTHLY_PORTFOLIO_STATS)
-        self.conn.execute(self.CREATE_MONTHLY_PORTFOLIO_STATS_INDEX)
-        self.conn.execute(self.CREATE_TWITTER_SENTIMENT)
-        self.conn.execute(self.CREATE_TWITTER_SENTIMENT_INDEX)
-        self.conn.execute(self.CREATE_NEWS_API)
-        self.conn.execute(self.CREATE_NEWS_API_INDEX)
-        self.conn.create_function("json_extract", 2, json_extract)
+    def __init__(self):
+        self.conn = None
+        raise NotImplemented
+
+    def close(self):
+        self.conn.close()
 
     def insert_alpha_vantage_records(self, records: list)->None:
         cur = self.conn.cursor()
@@ -133,9 +123,56 @@ class Db(CreateStatements, InsertStatements, SelectStatements, UpdateStatements)
         return pd.read_sql_query(query, con=self.conn)
 
 
+class MySQLDb(Db, MySQLCreateStatements, MySQLSelectStatements, MySQLInsertStatements):
+
+    def __init__(self, host: str, user: str, password: str, database: str)->None:
+        self.conn = mysql.connector.connect(
+            host=host,
+            user=user,
+            passwd=password,
+            database=database
+        )
+        cur = self.conn.cursor()
+        cur.execute(self.CREATE_ALPHA_VANTAGE_PRICES)
+        cur.execute(self.CREATE_ALPHA_VANTAGE_API_REQUESTS)
+        cur.execute(self.CREATE_MONTHLY_PORTFOLIO_STATS)
+        cur.execute(self.CREATE_TWITTER_SENTIMENT)
+        cur.execute(self.CREATE_NEWS_API)
+        cur.execute("SET sql_mode = '';")
+
+    def has_newsapi_articles_for_date(self, symbol: str, date_time: datetime.datetime)->bool:
+        cur = self.conn.cursor(buffered=True)
+        query = self.SELECT_HAS_NEWSAPI_ARTICLES_FOR_DATE
+        cur.execute(query, [symbol, str(int(date_time.timestamp()))])
+        one = cur.fetchone()
+        cur.close()
+        return one is not None
+
+    def save_newsapi_article_sentiment(self, symbol, created: datetime.datetime, article_id: str, polarity: float, subjectivity: float):
+        cur = self.conn.cursor()
+        cur.execute(self.INSERT_NEWSAPI_SENTIMENT, [symbol, created.timestamp(), article_id, polarity, subjectivity])
+        self.conn.commit()
 
 
+class SQLLiteDb(Db):
 
+    def __init__(self, cache_folder="cache")->None:
+        self.conn = sqlite3.connect("%s/cache.sqlite3" % cache_folder)
+        self.conn.execute("PRAGMA journal_mode = WAL;")
+        self.conn.execute("PRAGMA cache_size = 4096000;")
+        self.conn.execute("PRAGMA optimize;")
+        self.conn.execute("PRAGMA busy_timeout = 150000;")
+        self.conn.execute(self.CREATE_ALPHA_VANTAGE_PRICES)
+        self.conn.execute(self.CREATE_ALPHA_VANTAGE_PRICES_INDEX)
+        self.conn.execute(self.CREATE_ALPHA_VANTAGE_PRICES_INDEX_1)
+        self.conn.execute(self.CREATE_ALPHA_VANTAGE_API_REQUESTS)
+        self.conn.execute(self.CREATE_MONTHLY_PORTFOLIO_STATS)
+        self.conn.execute(self.CREATE_MONTHLY_PORTFOLIO_STATS_INDEX)
+        self.conn.execute(self.CREATE_TWITTER_SENTIMENT)
+        self.conn.execute(self.CREATE_TWITTER_SENTIMENT_INDEX)
+        self.conn.execute(self.CREATE_NEWS_API)
+        self.conn.execute(self.CREATE_NEWS_API_INDEX)
+        self.conn.create_function("json_extract", 2, json_extract)
 
 
 

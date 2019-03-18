@@ -95,3 +95,35 @@ class SelectStatements:
              order by ap.date_time desc) a
         group by symbol, strftime('%%Y-%%m', a.date_time, 'unixepoch')
         """
+
+
+class MySQLSelectStatements(SelectStatements):
+    SELECT_SYMBOLS_WITH_TEN_YEARS = """
+        select
+          distinct symbol
+        from alpha_vantage_prices
+        where symbol in (%(symbols)s)
+        and from_unixtime(date_time, '%%Y-%%m-%%d') = curdate() - interval 10 year;;
+    """
+    SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS_TEN_YEAR = """        
+        select
+            symbol,
+            from_unixtime(date_time, '%%Y-%%m-%%d') as date_time,
+            date_time as unix_time,
+            adjusted_close,
+            `close`,
+            high,
+            low,
+            `open`,
+            volume
+        from alpha_vantage_prices ap
+        where symbol in (%(symbols)s)
+        group by symbol, from_unixtime(date_time, '%%Y-%%m-%%d');
+    """
+    SELECT_HAS_NEWSAPI_ARTICLES_FOR_DATE = """
+    select 1 from newsapi_sentiment
+    where          
+        symbol = %s and 
+        date(from_unixtime(date_time))         
+        = date(from_unixtime(%s));
+    """

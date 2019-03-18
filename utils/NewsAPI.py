@@ -7,9 +7,9 @@ from utils import Db
 class NewsAPI:
     EVERYTHING = "https://newsapi.org/v2/everything"
 
-    def __init__(self, apikey: str, cache_folder='cache'):
+    def __init__(self, db: Db, apikey: str):
         self.apikey = apikey
-        self.db = Db(cache_folder)
+        self.db = db
 
     def load_symbol(self, symbol):
         today = datetime.now()

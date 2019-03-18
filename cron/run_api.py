@@ -3,7 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 project_root = os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + "/../")
 sys.path.append(project_root)
-from utils import AlphaVantage, Db
+from utils import AlphaVantage
+from utils.db.Db import MySQLDb as Db
 import hashlib, time
 
 from utils.NewsAPI import NewsAPI
@@ -24,7 +25,14 @@ if __name__ == '__main__':
         twitter_handles = config['twitter_handles']
         alpha_vantage_rpm = config["alphavantage"]["requests_per_minute"]
 
-    news = NewsAPI(news_apikey)
+    db = Db(
+        host=credentials['mysql']['host'],
+        user=credentials['mysql']['user'],
+        password=credentials['mysql']['password'],
+        database=credentials['mysql']['database']
+    )
+
+    news = NewsAPI(db, news_apikey)
     for handle in twitter_handles.keys():
         news.load_symbol(handle)
 
@@ -36,7 +44,7 @@ if __name__ == '__main__':
         twitter.load_symbol(handle)
 
     alpha_vantage = AlphaVantage(alpha_vantage_apikey, requests_per_minute=alpha_vantage_rpm)
-    db = Db()
+
 
     start = time.time()
 

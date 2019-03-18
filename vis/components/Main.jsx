@@ -35,7 +35,8 @@ export default class Main extends React.Component<MainProps, MainState> {
 
     symbolClicked(pa: PortfolioAllocation) {
         this.setState({
-            page: PAGES.TECHNICAL
+            page: PAGES.TECHNICAL,
+            selected_symbol: pa.asset
         });
     }
 
@@ -78,7 +79,7 @@ export default class Main extends React.Component<MainProps, MainState> {
 
     render() {
         return (
-            <div className="container-fluid">
+            <div className={"container-fluid " + this.state.page}>
                 <Nav1
                     selected_portfolio={this.state.selected_portfolio}
                     actions={this.actions}
@@ -103,7 +104,7 @@ export default class Main extends React.Component<MainProps, MainState> {
                     {this.state.page === PAGES.TECHNICAL &&
                     <TechnicalAnalysis
                         actions={this.actions}
-                        selected_portfolio={this.state.selected_portfolio}/> }
+                        selected_symbol={this.state.selected_symbol}/> }
                 </div>
             </div>
 

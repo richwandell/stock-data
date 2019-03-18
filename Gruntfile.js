@@ -43,7 +43,8 @@ module.exports = function (grunt) {
             vis: {
                 options: {
                     paths: ['./static'],
-                    sourceMap: true
+                    sourceMap: true,
+                    sourceMapURL: '/static/style.css.map',
                 },
                 files: {
                     './static/style.css': './static/style.less'
@@ -95,7 +96,7 @@ module.exports = function (grunt) {
                     expand: true
                 }, {
                     cwd: 'node_modules/highcharts/',
-                    src: 'highcharts.js',
+                    src: ['highcharts.js', 'highstock.js'],
                     dest: 'static/scripts/highcharts/',
                     expand: true
                 }, {
