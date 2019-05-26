@@ -1,4 +1,4 @@
-class SelectStatements:
+class SQLiteSelectStatements:
     SELECT_AVERAGE_DAILY_TWITTER_SENTIMENT = """
     select
       symbol,
@@ -97,18 +97,57 @@ class SelectStatements:
         """
 
 
-class MySQLSelectStatements(SelectStatements):
+class MySQLSelectStatements(SQLiteSelectStatements):
+    GET_MONTHLY_PORTFOLIO_STATS = """
+    select portfolio_data from monthly_portfolio_stats where portfolio_key = %s
+    """
+    GET_MONTHLY_SYMBOLS_AS_DATAFRAME = """
+    select
+        concat(
+          year(from_unixtime(date_time)),
+          '-',
+          LPAD(month(from_unixtime(date_time)), 2, '0')
+        ) as date_time,
+        symbol, adjusted_close
+    from
+        alpha_vantage_prices
+    where symbol in (%(symbols)s)
+    and date_time in (
+        select max(date_time) from alpha_vantage_prices
+        where symbol in (%(symbols)s)
+        group by year(from_unixtime(date_time)), month(from_unixtime(date_time))
+    );
+    """
+    SELECT_ALPHA_VANTAGE_API_REQUESTS = """
+    select * from alpha_vantage_api_requests 
+    where date(from_unixtime(request_date)) = date(from_unixtime(%s)) and symbol = %s
+    """
     SELECT_SYMBOLS_WITH_TEN_YEARS = """
         select
           distinct symbol
         from alpha_vantage_prices
         where symbol in (%(symbols)s)
-        and from_unixtime(date_time, '%%Y-%%m-%%d') = curdate() - interval 10 year;;
+        and date(from_unixtime(date_time)) = curdate() - interval 10 year;
+    """
+    SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS = """
+    select
+        symbol,
+        CAST(from_unixtime(date_time) as char) as date_time,
+        date_time as unix_time,
+        adjusted_close,
+        `close`,
+        high,
+        low,
+        `open`,
+        volume
+    from alpha_vantage_prices ap
+    where symbol in (%(symbols)s)
+    group by symbol, date(from_unixtime(date_time));
     """
     SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS_TEN_YEAR = """        
         select
             symbol,
-            from_unixtime(date_time, '%%Y-%%m-%%d') as date_time,
+            CAST(from_unixtime(date_time) as char) as date_time,
             date_time as unix_time,
             adjusted_close,
             `close`,
@@ -118,7 +157,7 @@ class MySQLSelectStatements(SelectStatements):
             volume
         from alpha_vantage_prices ap
         where symbol in (%(symbols)s)
-        group by symbol, from_unixtime(date_time, '%%Y-%%m-%%d');
+        group by symbol, date(from_unixtime(date_time));
     """
     SELECT_HAS_NEWSAPI_ARTICLES_FOR_DATE = """
     select 1 from newsapi_sentiment
@@ -126,4 +165,39 @@ class MySQLSelectStatements(SelectStatements):
         symbol = %s and 
         date(from_unixtime(date_time))         
         = date(from_unixtime(%s));
+    """
+    SELECT_HAS_TWEETS_FOR_DATE = """
+    select 1 from twitter_sentiment
+    where          
+        symbol = %s and 
+        date(from_unixtime(date_time)) 
+        = date(from_unixtime(%s));
+    """
+    SELECT_AVERAGE_DAILY_TWITTER_SENTIMENT = """
+    select
+      symbol,
+      date(from_unixtime(date_time)) as date_time,
+      avg(polarity) as average_polarity,
+      avg(subjectivity) as average_subjectivity
+    from twitter_sentiment
+    where symbol in (%(symbols)s)
+    group by date(from_unixtime(date_time));
+    """
+    SELECT_DAILY_NEWSAPI_SENTIMENT = """
+    select
+      symbol,
+      date(from_unixtime(date_time)) as date_time,
+      polarity,
+      subjectivity
+    from newsapi_sentiment
+    where symbol in (%(symbols)s)
+    """
+    SELECT_DAILY_TWITTER_SENTIMENT = """
+    select
+      symbol,
+      date(from_unixtime(date_time)) as date_time,
+      polarity,
+      subjectivity
+    from twitter_sentiment
+    where symbol in (%(symbols)s)
     """

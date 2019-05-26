@@ -3,7 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 project_root = os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + "/../")
 sys.path.append(project_root)
-from utils import AlphaVantage, Db
+from utils import AlphaVantage
+from utils.db.Db import MySQLDb as Db
 import hashlib, time
 import pandas as pd
 
@@ -19,8 +20,18 @@ if __name__ == '__main__':
 
     snp = pd.read_csv("cache/s&p500_companies.csv")
 
-    alpha_vantage = AlphaVantage(alpha_vantage_apikey, requests_per_minute=alpha_vantage_rpm)
-    db = Db()
+
+    db = Db(
+        host=credentials['mysql']['host'],
+        user=credentials['mysql']['user'],
+        password=credentials['mysql']['password'],
+        database=credentials['mysql']['database']
+    )
+    alpha_vantage = AlphaVantage(
+        db=db,
+        apikey=alpha_vantage_apikey,
+        requests_per_minute=alpha_vantage_rpm
+    )
     portfolio = {
         "symbols": snp['Symbol'].as_matrix().tolist(),
         "name": "S&P 500"

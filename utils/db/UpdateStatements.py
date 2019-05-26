@@ -1,4 +1,4 @@
-class UpdateStatements:
+class SQLiteUpdateStatements:
     UPDATE_MONTHLY_PORTFOLIO_STATS = """
         update monthly_portfolio_stats set portfolio_data = ? where portfolio_key = ?;
         """
@@ -7,4 +7,10 @@ class UpdateStatements:
     """
     UPDATE_NEWSAPI_SENTIMENT = """
         update newsapi_sentiment set polarity = ?, subjectivity = ? where symbol = ? and article_id = ?;
+    """
+
+
+class MySQLUpdateStatements:
+    UPDATE_MONTHLY_PORTFOLIO_STATS = """
+    update monthly_portfolio_stats set portfolio_data = %s where portfolio_key = %s;
     """

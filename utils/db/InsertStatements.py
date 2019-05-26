@@ -27,7 +27,7 @@ class MySQLInsertStatements(InsertStatements):
     """
     INSERT_MONTHLY_PORTFOLIO_STATS = """
     insert into monthly_portfolio_stats values (%s, %s)
-    on duplicate key update portfolio_key=portfolio_key;
+    on duplicate key update portfolio_data=%s;
     """
     INSERT_TWITTER_SENTIMENT = """
     insert into twitter_sentiment values (%s, %s, %s, %s, %s)

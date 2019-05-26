@@ -6,12 +6,12 @@ import mysql.connector
 
 from utils.db.CreateStatements import CreateStatements, MySQLCreateStatements
 from utils.db.InsertStatements import InsertStatements, MySQLInsertStatements
-from utils.db.SelectStatements import SelectStatements, MySQLSelectStatements
-from utils.db.UpdateStatements import UpdateStatements
+from utils.db.SelectStatements import SQLiteSelectStatements, MySQLSelectStatements
+from utils.db.UpdateStatements import SQLiteUpdateStatements, MySQLUpdateStatements
 from utils.db.json_functions import json_extract
 
 
-class Db(CreateStatements, InsertStatements, SelectStatements, UpdateStatements):
+class Db(CreateStatements, InsertStatements, SQLiteSelectStatements, SQLiteUpdateStatements):
     DATE_KEY = '%Y-%m-%d'
 
     def __init__(self):
@@ -123,7 +123,7 @@ class Db(CreateStatements, InsertStatements, SelectStatements, UpdateStatements)
         return pd.read_sql_query(query, con=self.conn)
 
 
-class MySQLDb(Db, MySQLCreateStatements, MySQLSelectStatements, MySQLInsertStatements):
+class MySQLDb(Db, MySQLCreateStatements, MySQLSelectStatements, MySQLInsertStatements, MySQLUpdateStatements):
 
     def __init__(self, host: str, user: str, password: str, database: str)->None:
         self.conn = mysql.connector.connect(
@@ -139,6 +139,14 @@ class MySQLDb(Db, MySQLCreateStatements, MySQLSelectStatements, MySQLInsertState
         cur.execute(self.CREATE_TWITTER_SENTIMENT)
         cur.execute(self.CREATE_NEWS_API)
         cur.execute("SET sql_mode = '';")
+        cur.execute("SET time_zone='+0:00';")
+
+    def has_tweets_for_date(self, symbol: str, date_time: datetime.datetime)->bool:
+        cur = self.conn.cursor(buffered=True)
+        cur.execute(self.SELECT_HAS_TWEETS_FOR_DATE, [symbol, str(int(date_time.timestamp()))])
+        one = cur.fetchone()
+        cur.close()
+        return one is not None
 
     def has_newsapi_articles_for_date(self, symbol: str, date_time: datetime.datetime)->bool:
         cur = self.conn.cursor(buffered=True)
@@ -151,6 +159,30 @@ class MySQLDb(Db, MySQLCreateStatements, MySQLSelectStatements, MySQLInsertState
     def save_newsapi_article_sentiment(self, symbol, created: datetime.datetime, article_id: str, polarity: float, subjectivity: float):
         cur = self.conn.cursor()
         cur.execute(self.INSERT_NEWSAPI_SENTIMENT, [symbol, created.timestamp(), article_id, polarity, subjectivity])
+        self.conn.commit()
+
+    def save_tweet(self, symbol: str, created: datetime.datetime, tweet_id: int, polarity: float, subjectivity: float):
+        cur = self.conn.cursor()
+        cur.execute(self.INSERT_TWITTER_SENTIMENT, [symbol, created.timestamp(), tweet_id, polarity, subjectivity])
+        self.conn.commit()
+
+    def save_efficient_portfolio_stats(self, key, portfolios: np.ndarray, symbols: list):
+        json_string = json.dumps({
+            "portfolios": portfolios.tolist(),
+            "symbols": symbols
+        })
+        cur = self.conn.cursor()
+        cur.execute(self.INSERT_MONTHLY_PORTFOLIO_STATS, [key, json_string, json_string])
+        self.conn.commit()
+
+    def save_monthly_portfolio_stats(self, key, asset_risk, asset_reward, assets):
+        json_string = json.dumps({
+            "asset_risk": list(asset_risk),
+            "asset_reward": list(asset_reward),
+            "assets": list(assets)
+        })
+        cur = self.conn.cursor()
+        cur.execute(self.INSERT_MONTHLY_PORTFOLIO_STATS, [key, json_string, json_string])
         self.conn.commit()
 
 

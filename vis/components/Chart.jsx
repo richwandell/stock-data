@@ -21,6 +21,7 @@ export default class Chart extends React.Component {
     async componentDidUpdate() {
         if (typeof(this.res[this.props.portfolio.name]) !== "undefined") {
             this.renderChart(this.res[this.props.portfolio.name]);
+            this.props.actions.setPortfolio(this.sharpePortfolio);
         } else {
             this.res[this.props.portfolio.name] = await this.getData();
             this.renderChart(this.res[this.props.portfolio.name]);

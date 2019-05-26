@@ -36,15 +36,23 @@ if __name__ == '__main__':
     for handle in twitter_handles.keys():
         news.load_symbol(handle)
 
-    twitter = Twitter(twitter_handles=twitter_handles, consumer_key=twitter_consumer_key,
-                      consumer_secret=twitter_consumer_secret, product=twitter_product,
-                      environment=twitter_environment)
+    twitter = Twitter(
+        db=db,
+        twitter_handles=twitter_handles,
+        consumer_key=twitter_consumer_key,
+        consumer_secret=twitter_consumer_secret,
+        product=twitter_product,
+        environment=twitter_environment
+    )
 
     for handle in twitter_handles.keys():
         twitter.load_symbol(handle)
 
-    alpha_vantage = AlphaVantage(alpha_vantage_apikey, requests_per_minute=alpha_vantage_rpm)
-
+    alpha_vantage = AlphaVantage(
+        db=db,
+        apikey=alpha_vantage_apikey,
+        requests_per_minute=alpha_vantage_rpm
+    )
 
     start = time.time()
 

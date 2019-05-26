@@ -4,12 +4,13 @@ import numpy as np
 from numpy.core.multiarray import ndarray
 from pandas import DataFrame
 
-from utils import Db
+from utils.db.Db import Db
 import pandas as pd
 from typing import List, Set, Dict, Tuple, Optional
 from multiprocessing import Queue, Pool
 from utils.EFC import portfolio_volatility
 from scipy import optimize
+
 
 def pool_init(queue):
     global q
@@ -57,13 +58,13 @@ class AlphaVantage:
     closed_key = "4. close"
     ENDPOINT = 'https://www.alphavantage.co/query'
 
-    def __init__(self, apikey: str, requests_per_minute=5,
+    def __init__(self, db: Db, apikey: str, requests_per_minute=5,
                  cache_folder="cache"):
         self.cache_folder = cache_folder
         self.requests_per_minute = requests_per_minute
         self.apikey = apikey
         self.rpm = 0
-        self.db = Db(cache_folder)
+        self.db = db
         self.queue = Queue()
         self.pool = Pool(initializer=pool_init, initargs=(self.queue,), processes=os.cpu_count())
 
@@ -243,7 +244,12 @@ class AlphaVantage:
                 'symbol': symbol,
                 'outputsize': 'full'
             })
-            data = r.json()
+            try:
+                data = r.json()
+            except Exception as e:
+                print(e)
+                return
+
             if self.time_series_key in data:
                 combined = data[self.time_series_key]
                 record = []

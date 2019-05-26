@@ -1,6 +1,7 @@
 from flask import Flask, render_template, Response, g
 import json, hashlib
-from utils import AlphaVantage, Db
+from utils import AlphaVantage
+from utils.db.Db import Db, SQLLiteDb, MySQLDb
 import pandas as pd
 
 app = Flask(__name__)
@@ -10,16 +11,26 @@ def get_db()->Db:
     """Opens a new database connection if there is none yet for the
     current application context.
     """
-    if not hasattr(g, 'sqlite_db'):
-        g.sqlite_db = Db()
-    return g.sqlite_db
+    if not hasattr(g, 'database'):
+        config = get_config()
+        if config['database'] == "mysql":
+            creds = get_creds()
+            g.database = MySQLDb(
+                host=creds['mysql']['host'],
+                user=creds['mysql']['user'],
+                password=creds['mysql']['password'],
+                database=creds['mysql']['database']
+            )
+        elif config['database'] == 'sqlite':
+            g.database = SQLLiteDb()
+    return g.database
 
 
 @app.teardown_appcontext
 def close_db(error):
     """Closes the database again at the end of the request."""
-    if hasattr(g, 'sqlite_db'):
-        g.sqlite_db.close()
+    if hasattr(g, 'database'):
+        g.database.close()
 
 
 def get_alpha_vantage_creds():
@@ -32,6 +43,12 @@ def get_config():
     with open("config.json") as f:
         config = json.loads(f.read())
         return config
+
+
+def get_creds():
+    with open("creds.json") as f:
+        creds = json.loads(f.read())
+        return creds
 
 
 @app.route("/")
