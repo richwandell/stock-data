@@ -1,27 +1,10 @@
 create schema stock_data collate utf8_general_ci;
 
-create table alpha_vantage_api_requests
+create table api_requests
 (
 	request_date int(10) not null,
 	symbol varchar(50) not null,
 	primary key (request_date, symbol)
-);
-
-create table alpha_vantage_prices
-(
-	symbol varchar(50) not null,
-	date_time int(10) not null,
-	low decimal(13,4) not null,
-	divident_amount decimal(13,4) not null,
-	adjusted_close decimal(13,4) not null,
-	open decimal(13,4) not null,
-	split_coefficient decimal(13,4) not null,
-	close decimal(13,4) not null,
-	high decimal(13,4) not null,
-	volume bigint not null,
-	primary key (symbol, date_time, adjusted_close),
-	constraint alpha_vantage_prices_symbol_date_time_uindex
-		unique (symbol, date_time)
 );
 
 create table monthly_portfolio_stats
@@ -43,6 +26,23 @@ create table newsapi_sentiment
 	polarity double not null,
 	subjectivity double not null,
 	primary key (symbol, date_time, article_id)
+);
+
+create table symbol_prices
+(
+	symbol varchar(50) not null,
+	date_time int(10) not null,
+	low decimal(13,4) not null,
+	divident_amount decimal(13,4) not null,
+	adjusted_close decimal(13,4) not null,
+	open decimal(13,4) not null,
+	split_coefficient decimal(13,4) not null,
+	close decimal(13,4) not null,
+	high decimal(13,4) not null,
+	volume bigint not null,
+	primary key (symbol, date_time, adjusted_close),
+	constraint symbol_prices_symbol_date_time_uindex
+		unique (symbol, date_time)
 );
 
 create table twitter_sentiment

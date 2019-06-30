@@ -1,6 +1,6 @@
 class CreateStatements:
-    CREATE_ALPHA_VANTAGE_PRICES = """
-        CREATE TABLE if not exists alpha_vantage_prices
+    CREATE_SYMBOL_PRICES = """
+        CREATE TABLE if not exists symbol_prices
         (
             symbol text NOT NULL,
             date_time integer NOT NULL,
@@ -14,18 +14,18 @@ class CreateStatements:
             volume real NOT NULL
         );
         """
-    CREATE_ALPHA_VANTAGE_PRICES_INDEX = """
-        CREATE UNIQUE INDEX if not exists alpha_vantage_prices_symbol_date_time_uindex ON alpha_vantage_prices (symbol, date_time DESC);
+    CREATE_SYMBOL_PRICES_INDEX = """
+        CREATE UNIQUE INDEX if not exists symbol_prices_symbol_date_time_uindex ON symbol_prices (symbol, date_time DESC);
         """
-    CREATE_ALPHA_VANTAGE_PRICES_INDEX_1 = """
-        CREATE INDEX if not exists alpha_vantage_prices_symbol_date_time_adjusted_close_index ON alpha_vantage_prices (symbol, date_time, adjusted_close);
+    CREATE_SYMBOL_PRICES_INDEX_1 = """
+        CREATE INDEX if not exists symbol_prices_symbol_date_time_adjusted_close_index ON symbol_prices (symbol, date_time, adjusted_close);
         """
-    CREATE_ALPHA_VANTAGE_API_REQUESTS = """
-        CREATE TABLE if not exists alpha_vantage_api_requests
+    CREATE_API_REQUESTS = """
+        CREATE TABLE if not exists api_requests
         (
             request_date integer,
             symbol text,
-            CONSTRAINT alpha_vantage_api_requests_pk PRIMARY KEY (request_date, symbol)
+            CONSTRAINT api_requests_pk PRIMARY KEY (request_date, symbol)
         );
         """
     CREATE_MONTHLY_PORTFOLIO_STATS = """
@@ -69,8 +69,8 @@ class CreateStatements:
 
 
 class MySQLCreateStatements(CreateStatements):
-    CREATE_ALPHA_VANTAGE_PRICES = """
-    CREATE TABLE if not exists `alpha_vantage_prices` (
+    CREATE_SYMBOL_PRICES = """
+    CREATE TABLE if not exists `symbol_prices` (
       `symbol` varchar(50) NOT NULL,
       `date_time` int(10) NOT NULL,
       `low` decimal(13,4) NOT NULL,
@@ -82,11 +82,11 @@ class MySQLCreateStatements(CreateStatements):
       `high` decimal(13,4) NOT NULL,
       `volume` bigint(20) NOT NULL,
       PRIMARY KEY (`symbol`,`date_time`,`adjusted_close`),
-      UNIQUE KEY `alpha_vantage_prices_symbol_date_time_uindex` (`symbol`,`date_time`)
+      UNIQUE KEY `symbol_prices_symbol_date_time_uindex` (`symbol`,`date_time`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     """
-    CREATE_ALPHA_VANTAGE_API_REQUESTS = """
-    CREATE TABLE if not exists `alpha_vantage_api_requests` (
+    CREATE_API_REQUESTS = """
+    CREATE TABLE if not exists `api_requests` (
       `request_date` int(10) NOT NULL,
       `symbol` varchar(50) NOT NULL,
       PRIMARY KEY (`request_date`,`symbol`)

@@ -41,11 +41,11 @@ class SQLiteSelectStatements:
         date(date_time, 'unixepoch') 
         = date(?, 'unixepoch');
     """
-    SELECT_ALPHA_VANTAGE_API_REQUESTS = """
-        select * from alpha_vantage_api_requests 
+    SELECT_API_REQUESTS = """
+        select * from api_requests 
         where date(request_date, 'unixepoch') = date(?, 'unixepoch') and symbol = ?
         """
-    SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS = """
+    SELECT_SYMBOL_PRICES_SYMBOLS = """
         select 
             symbol,
             strftime('%%Y-%%m-%%d', date_time, 'unixepoch') as date_time,
@@ -56,11 +56,11 @@ class SQLiteSelectStatements:
             low,
             `open`,
             volume         
-        from alpha_vantage_prices ap
+        from symbol_prices ap
         where symbol in (%(symbols)s)    
         group by symbol, strftime('%%Y-%%m-%%d', date_time, 'unixepoch')
         """
-    SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS_TEN_YEAR = """
+    SELECT_SYMBOL_PRICES_SYMBOLS_TEN_YEAR = """
         select 
             symbol,
             strftime('%%Y-%%m-%%d', date_time, 'unixepoch') as date_time,
@@ -71,14 +71,14 @@ class SQLiteSelectStatements:
             low,
             `open`,
             volume         
-        from alpha_vantage_prices ap
+        from symbol_prices ap
         where symbol in (%(symbols)s)    
         group by symbol, strftime('%%Y-%%m-%%d', date_time, 'unixepoch')
     """
     SELECT_SYMBOLS_WITH_TEN_YEARS = """
     select
       distinct symbol
-    from alpha_vantage_prices
+    from symbol_prices
     where symbol in (%(symbols)s)
     and strftime('%%Y-%%m-%%d', date_time, 'unixepoch') = date('now', '-10 year');
     """
@@ -89,8 +89,8 @@ class SQLiteSelectStatements:
         select 
             strftime('%%Y-%%m', date_time, 'unixepoch') as date_time, 
             symbol, adjusted_close
-        from (select date_time, symbol, adjusted_close
-             from alpha_vantage_prices ap
+        from (select date_time, symbol, `adjusted_close`
+             from symbol_prices ap
              where symbol in (%(symbols)s)
              order by ap.date_time desc) a
         group by symbol, strftime('%%Y-%%m', a.date_time, 'unixepoch')
@@ -110,26 +110,47 @@ class MySQLSelectStatements(SQLiteSelectStatements):
         ) as date_time,
         symbol, adjusted_close
     from
-        alpha_vantage_prices
+        symbol_prices
     where symbol in (%(symbols)s)
     and date_time in (
-        select max(date_time) from alpha_vantage_prices
+        select max(date_time) from symbol_prices
         where symbol in (%(symbols)s)
         group by year(from_unixtime(date_time)), month(from_unixtime(date_time))
     );
     """
-    SELECT_ALPHA_VANTAGE_API_REQUESTS = """
-    select * from alpha_vantage_api_requests 
+    SELECT_API_REQUESTS = """
+    select * from api_requests 
     where date(from_unixtime(request_date)) = date(from_unixtime(%s)) and symbol = %s
     """
     SELECT_SYMBOLS_WITH_TEN_YEARS = """
         select
           distinct symbol
-        from alpha_vantage_prices
+        from symbol_prices
         where symbol in (%(symbols)s)
         and date(from_unixtime(date_time)) = curdate() - interval 10 year;
     """
-    SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS = """
+    SELECT_SYMBOLS_WITH_THIS_MONTH = """
+        select
+          distinct symbol
+        from symbol_prices
+        where symbol in (%(symbols)s)
+        and date(from_unixtime(date_time)) = curdate() - interval 1 month ;
+    """
+    SELECT_SYMBOLS_WITH_THIS_MONTH_AND_FIVE_YEARS = """
+    select distinct symbol
+    from
+         symbol_prices
+    where symbol in (
+      select distinct symbol
+      from symbol_prices
+      where symbol in (%(symbols)s)
+      and month(from_unixtime(date_time)) = month(curdate())
+      and year(from_unixtime(date_time)) = year(curdate() - interval 5 year)
+    )
+    and month(from_unixtime(date_time)) = month(curdate() - interval 1 month)
+    and year(from_unixtime(date_time)) = year(curdate());
+    """
+    SELECT_SYMBOL_PRICES_SYMBOLS = """
     select
         symbol,
         CAST(from_unixtime(date_time) as char) as date_time,
@@ -140,11 +161,11 @@ class MySQLSelectStatements(SQLiteSelectStatements):
         low,
         `open`,
         volume
-    from alpha_vantage_prices ap
+    from symbol_prices ap
     where symbol in (%(symbols)s)
     group by symbol, date(from_unixtime(date_time));
     """
-    SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS_TEN_YEAR = """        
+    SELECT_SYMBOL_PRICES_SYMBOLS_TEN_YEAR = """        
         select
             symbol,
             CAST(from_unixtime(date_time) as char) as date_time,
@@ -155,7 +176,7 @@ class MySQLSelectStatements(SQLiteSelectStatements):
             low,
             `open`,
             volume
-        from alpha_vantage_prices ap
+        from symbol_prices ap
         where symbol in (%(symbols)s)
         group by symbol, date(from_unixtime(date_time));
     """

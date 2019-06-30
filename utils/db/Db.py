@@ -21,21 +21,21 @@ class Db(CreateStatements, InsertStatements, SQLiteSelectStatements, SQLiteUpdat
     def close(self):
         self.conn.close()
 
-    def insert_alpha_vantage_records(self, records: list)->None:
+    def insert_symbol_records(self, records: list)->None:
         cur = self.conn.cursor()
-        cur.executemany(self.INSERT_ALPHA_VANTAGE_PRICES, records)
+        cur.executemany(self.INSERT_SYMBOL_PRICES, records)
         self.conn.commit()
 
-    def insert_alpha_vantage_api_request(self, timestamp: int, symbol: str)->None:
+    def insert_api_request(self, timestamp: int, symbol: str)->None:
         cur = self.conn.cursor()
-        cur.execute(self.INSERT_ALPHA_VANTAGE_API_REQUEST, [timestamp, symbol])
+        cur.execute(self.INSERT_API_REQUEST, [timestamp, symbol])
         self.conn.commit()
 
     def has_request_today(self, symbol: str) -> bool:
         cur = self.conn.cursor()
         date_string = datetime.datetime.today().strftime(self.DATE_KEY)
         today_timestamp = int(datetime.datetime.strptime(date_string, self.DATE_KEY).timestamp())
-        cur.execute(self.SELECT_ALPHA_VANTAGE_API_REQUESTS, [today_timestamp, symbol])
+        cur.execute(self.SELECT_API_REQUESTS, [today_timestamp, symbol])
         one = cur.fetchone()
         return one is not None
 
@@ -44,20 +44,27 @@ class Db(CreateStatements, InsertStatements, SQLiteSelectStatements, SQLiteUpdat
         cur = self.conn.cursor()
         cur.execute(query)
         all = list([x[0] for x in cur.fetchall()])
-        query = self.SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS_TEN_YEAR % {"symbols": "'" + "','".join(all) + "'"}
+        query = self.SELECT_SYMBOL_PRICES_SYMBOLS_TEN_YEAR % {"symbols": "'" + "','".join(all) + "'"}
         return pd.read_sql_query(query, con=self.conn), all
 
     def get_symbols_as_dataframe(self, symbols)->pd.DataFrame:
-        query = self.SELECT_ALPHA_VANTAGE_PRICES_SYMBOLS % {"symbols": "'" + "','".join(symbols) + "'"}
+        query = self.SELECT_SYMBOL_PRICES_SYMBOLS % {"symbols": "'" + "','".join(symbols) + "'"}
         return pd.read_sql_query(query, con=self.conn)
 
     def get_monthly_symbols_as_dataframe(self, symbols)->pd.DataFrame:
-        query = self.SELECT_SYMBOLS_WITH_TEN_YEARS % {"symbols": "'" + "','".join(symbols) + "'"}
+        query = self.SELECT_SYMBOLS_WITH_THIS_MONTH_AND_FIVE_YEARS % {"symbols": "'" + "','".join(symbols) + "'"}
         cur = self.conn.cursor()
         cur.execute(query)
         all = list([x[0] for x in cur.fetchall()])
-        query = self.GET_MONTHLY_SYMBOLS_AS_DATAFRAME % {"symbols": "'" + "','".join(all) + "'"}
-        return pd.read_sql_query(query, con=self.conn)
+        df = None
+        for symbol in all:
+            query = self.GET_MONTHLY_SYMBOLS_AS_DATAFRAME % {"symbols": "'" + symbol + "'"}
+            tdf = pd.read_sql_query(query, con=self.conn)
+            if df is None:
+                df = tdf
+            else:
+                df = df.append(tdf)
+        return df
 
     def save_monthly_portfolio_stats(self, key, asset_risk, asset_reward, assets):
         json_string = json.dumps({
@@ -133,8 +140,8 @@ class MySQLDb(Db, MySQLCreateStatements, MySQLSelectStatements, MySQLInsertState
             database=database
         )
         cur = self.conn.cursor()
-        cur.execute(self.CREATE_ALPHA_VANTAGE_PRICES)
-        cur.execute(self.CREATE_ALPHA_VANTAGE_API_REQUESTS)
+        cur.execute(self.CREATE_SYMBOL_PRICES)
+        cur.execute(self.CREATE_API_REQUESTS)
         cur.execute(self.CREATE_MONTHLY_PORTFOLIO_STATS)
         cur.execute(self.CREATE_TWITTER_SENTIMENT)
         cur.execute(self.CREATE_NEWS_API)
@@ -194,10 +201,10 @@ class SQLLiteDb(Db):
         self.conn.execute("PRAGMA cache_size = 4096000;")
         self.conn.execute("PRAGMA optimize;")
         self.conn.execute("PRAGMA busy_timeout = 150000;")
-        self.conn.execute(self.CREATE_ALPHA_VANTAGE_PRICES)
-        self.conn.execute(self.CREATE_ALPHA_VANTAGE_PRICES_INDEX)
-        self.conn.execute(self.CREATE_ALPHA_VANTAGE_PRICES_INDEX_1)
-        self.conn.execute(self.CREATE_ALPHA_VANTAGE_API_REQUESTS)
+        self.conn.execute(self.CREATE_SYMBOL_PRICES)
+        self.conn.execute(self.CREATE_SYMBOL_PRICES_INDEX)
+        self.conn.execute(self.CREATE_SYMBOL_PRICES_INDEX_1)
+        self.conn.execute(self.CREATE_API_REQUESTS)
         self.conn.execute(self.CREATE_MONTHLY_PORTFOLIO_STATS)
         self.conn.execute(self.CREATE_MONTHLY_PORTFOLIO_STATS_INDEX)
         self.conn.execute(self.CREATE_TWITTER_SENTIMENT)

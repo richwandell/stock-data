@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     corr = corr.where(np.triu(np.ones(corr.shape), k=1).astype(np.bool))
     corr = corr.unstack().transpose()\
-        .sort_values(by='adjusted_close', ascending=False)\
+        .sort_values(by='close', ascending=False)\
         .dropna()
 
     print("done")
