@@ -1,13 +1,13 @@
 from flask import Flask, render_template, Response, g
 import json, hashlib
 from utils import AlphaVantage
-from utils.db.Db import Db, SQLLiteDb, MySQLDb
+from utils.db.Db import MySQLDb
 import pandas as pd
 
 app = Flask(__name__)
 
 
-def get_db()->Db:
+def get_db()->MySQLDb:
     """Opens a new database connection if there is none yet for the
     current application context.
     """
@@ -21,8 +21,6 @@ def get_db()->Db:
                 password=creds['mysql']['password'],
                 database=creds['mysql']['database']
             )
-        elif config['database'] == 'sqlite':
-            g.database = SQLLiteDb()
     return g.database
 
 

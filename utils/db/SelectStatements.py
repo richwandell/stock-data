@@ -116,7 +116,8 @@ class MySQLSelectStatements(SQLiteSelectStatements):
         select max(date_time) from symbol_prices
         where symbol in (%(symbols)s)
         group by year(from_unixtime(date_time)), month(from_unixtime(date_time))
-    );
+    )
+    and year(from_unixtime(date_time)) > year(curdate()) - 6
     """
     SELECT_API_REQUESTS = """
     select * from api_requests 

@@ -1,4 +1,4 @@
-from .db.Db import Db
+from .db.Db import MySQLDb
 from .db.json_functions import *
 from .api.AlphaVantage import AlphaVantage
 from .api.Quandl import Quandl

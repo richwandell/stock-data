@@ -29,10 +29,10 @@ if __name__ == '__main__':
         database=credentials['mysql']['database']
     )
 
-    td_ameritrade = TDAmeritrade(
-        db=db,
-        apikey=td_ameritrade_apikey
-    )
+    # td_ameritrade = TDAmeritrade(
+    #     db=db,
+    #     apikey=td_ameritrade_apikey
+    # )
 
     alpha_vantage = AlphaVantage(
         db=db,
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     portfolio_optimizer = PortfolioOptimizer(
         db=db,
-        api_client_list=[td_ameritrade, alpha_vantage]
+        api_client_list=[alpha_vantage]
     )
 
     for portfolio in config["portfolios"]:

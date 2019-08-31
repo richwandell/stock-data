@@ -2,7 +2,7 @@ import time
 
 from utils.Exceptions import APIRateLimitException
 from utils.api.StockPriceAPIClient import StockPriceAPIClient
-from utils.db.Db import Db
+from utils.db.Db import MySQLDb
 import requests
 
 
@@ -10,7 +10,7 @@ class Quandl(StockPriceAPIClient):
 
     ENDPOINT = 'https://www.quandl.com/api/v3/datasets/WIKI/%s.json'
 
-    def __init__(self, db: Db, apikey: str, requests_per_ten_seconds=300, cache_folder="cache"):
+    def __init__(self, db: MySQLDb, apikey: str, requests_per_ten_seconds=300, cache_folder="cache"):
         StockPriceAPIClient.__init__(self, db, cache_folder)
         self.requests_per_ten_seconds = requests_per_ten_seconds
         self.apikey = apikey

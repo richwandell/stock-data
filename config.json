@@ -92,18 +92,22 @@
       ]
     },
     {
-      "name": "High Performance ETF's",
+      "name": "Investing",
       "symbols": [
-        "UWT",
-        "OSOU",
-        "WTIU",
-        "OILU",
-        "LABU",
-        "UBOT",
+        "DODIX",
+        "BND",
+        "FSCSX",
+
+        "VOO",
+        "VOT",
+        "VFIAX",
+        "FPX",
+        "IVV",
+        "SWPPX",
+        "SPY",
+        "VTI",
         "TECL",
-        "NAIL",
-        "SOXL",
-        "UCO"
+        "SOXL"
       ]
     }
   ],

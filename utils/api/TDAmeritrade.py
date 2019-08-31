@@ -4,14 +4,14 @@ import time
 import requests
 
 from utils.api.StockPriceAPIClient import StockPriceAPIClient
-from utils.db.Db import Db
+from utils.db.Db import MySQLDb
 
 
 class TDAmeritrade(StockPriceAPIClient):
 
     ENDPOINT = "https://api.tdameritrade.com/v1/marketdata/%s/pricehistory"
 
-    def __init__(self, db: Db, apikey: str, requests_per_second=2, cache_folder="cache"):
+    def __init__(self, db: MySQLDb, apikey: str, requests_per_second=2, cache_folder="cache"):
         StockPriceAPIClient.__init__(self, db, cache_folder)
         self.requests_per_second = requests_per_second
         self.apikey = apikey

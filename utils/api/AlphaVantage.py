@@ -3,7 +3,7 @@ import requests, json, time
 
 from utils.Exceptions import APIRateLimitException
 from utils.api.StockPriceAPIClient import StockPriceAPIClient
-from utils.db.Db import Db
+from utils.db.Db import MySQLDb
 import pandas as pd
 
 
@@ -16,7 +16,7 @@ class AlphaVantage(StockPriceAPIClient):
     closed_key = "4. close"
     ENDPOINT = 'https://www.alphavantage.co/query'
 
-    def __init__(self, db: Db, apikey: str, requests_per_minute=5, cache_folder="cache"):
+    def __init__(self, db: MySQLDb, apikey: str, requests_per_minute=5, cache_folder="cache"):
         StockPriceAPIClient.__init__(self, db, cache_folder)
         self.requests_per_minute = requests_per_minute
         self.apikey = apikey
@@ -65,5 +65,7 @@ class AlphaVantage(StockPriceAPIClient):
             elif "Note" in data:
                 if "API call frequency" in data["Note"]:
                     raise APIRateLimitException
-                print("Missing Time Series")
+            elif "Error Message" in data:
+                print("Missing Time Series for: " + symbol)
                 print(data)
+                self.rpm += 1

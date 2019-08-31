@@ -7,7 +7,7 @@ from scipy import optimize
 
 from utils import NoAPIClientException, APIFailedException
 from utils.Exceptions import APIRateLimitException
-from utils.db.Db import Db
+from utils.db.Db import MySQLDb
 from utils.api.StockPriceAPIClient import StockPriceAPIClient
 from utils.EFC import portfolio_volatility
 
@@ -50,7 +50,7 @@ def compute_portfolio(all_inputs):
 
 class PortfolioOptimizer:
 
-    def __init__(self, db: Db, api_client_list: List[StockPriceAPIClient], offline=False):
+    def __init__(self, db: MySQLDb, api_client_list: List[StockPriceAPIClient], offline=False):
         self.api_client_list = api_client_list
         self.db = db
         self.failed_api_clients = {}
@@ -107,6 +107,7 @@ class PortfolioOptimizer:
         df = df.pivot(columns='symbol')
         df = df.fillna(method='ffill')
         df = df.fillna(method='bfill')
+        # df = df.dropna()
         column_names = [x[1] for x in list(df)]
 
         returns_monthly = df.pct_change()
