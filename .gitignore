@@ -14,3 +14,6 @@ cache/simfin_fundamentals_narrow.csv
 cache/simfin_fundamentals_wide.csv
 db.sqlite3
 .venv
+.env
+!frontend/.env
+static

@@ -7,6 +7,15 @@ verify_ssl = true
 
 [packages]
 django = "==3.1.7"
+psycopg2 = "==2.8.6"
+python-dotenv = "*"
+uvicorn = {extras = ["standard"],version = "*"}
+gunicorn = "*"
+celery = "==5.0.5"
+django-celery-results = "==2.0.1"
+redis = "*"
+graphene-django = "*"
+djangorestframework = "*"
 
 [requires]
 python_version = "3.9"

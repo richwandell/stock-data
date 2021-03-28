@@ -1,3 +1,10 @@
+.git
 node_modules
 cache/cache.sqlite3-shm
 cache/cache.sqlite3-wal
+.venv
+.run
+old
+scratch
+.env
+creds.json
