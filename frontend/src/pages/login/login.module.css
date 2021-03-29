@@ -1,0 +1,11 @@
+.form {
+    width: 100%;
+    max-width: 330px;
+    padding: 15px;
+    margin: 20vh auto;
+    text-align: center;
+}
+
+.formCheckbox {
+    font-weight: 400;
+}
