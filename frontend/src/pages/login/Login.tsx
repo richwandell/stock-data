@@ -1,7 +1,10 @@
 import {TopNavBar} from "../../shared/TopNavbar";
 import {Button, Form, Image} from "react-bootstrap";
 import css from "./login.module.css"
-import {useState} from "react";
+import {useContext, useState} from "react";
+import {AuthContext} from "../../shared/AuthContextProvider";
+import {UserInfo} from "../../react-app-env";
+import { useHistory } from "react-router-dom";
 
 interface State {
     user: string,
@@ -9,23 +12,22 @@ interface State {
 }
 
 export function Login() {
+    const {user, csrfHeader, setUser} = useContext(AuthContext)
     const [state, setState] = useState<State>({user: '', pass: ''})
+    const history = useHistory()
 
     async function submitForm() {
         try {
-            const token = document.querySelectorAll('input[name=csrfmiddlewaretoken]')[0]
-                .getAttribute('value') || ''
-
             const response = await fetch("/userauth/login/", {
                 method: 'post',
                 body: JSON.stringify(state),
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': token
+                    ...csrfHeader
                 }
             })
-            const data = await response.json()
-            console.log(data)
+            const data: {user: UserInfo} = await response.json()
+            history.push("/dashboard")
         } catch (error) {
             console.log(error)
         }
@@ -33,7 +35,7 @@ export function Login() {
 
 
     return <>
-        <TopNavBar/>
+        <TopNavBar  />
         <Form className={css.form}>
             <Image width={70} src={"/static/frontend/graph-up.svg"} className={"mb-4"}/>
             <h3 className={"font-weight-normal mb-3"}>Please sign In</h3>

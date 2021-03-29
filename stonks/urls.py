@@ -26,5 +26,6 @@ urlpatterns = [
     path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=True))),
     path('userauth/', include('stonks.userauth.urls')),
     path('login/', index),
+    path('dashboard/', index),
     path('', index)
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

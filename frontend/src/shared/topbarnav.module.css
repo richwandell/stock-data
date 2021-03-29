@@ -1,0 +1,14 @@
+.graphUpIcon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    color: white;
+}
+
+.outerNavbar {
+    background-color: lightseagreen;
+}
+
+.navbarBrand {
+    color: white !important;
+}

@@ -1,21 +1,25 @@
-import {Navbar} from "react-bootstrap";
+import {Button, Nav, Navbar} from "react-bootstrap";
 import {useContext} from "react";
 import {AuthContext} from "./AuthContextProvider";
-
+import {PersonCircle} from "./svg/PersonCircle";
+import {GraphUp} from "./svg/GraphUp";
+import css from "./topbarnav.module.css"
 
 export function TopNavBar() {
-    const userContext = useContext(AuthContext)
+    const {user} = useContext(AuthContext)
 
-    return <Navbar bg="dark" variant="dark">
-        <Navbar.Brand href="#home">
-            <img
-                alt=""
-                src="/static/frontend/logo192.png"
-                width="30"
-                height="30"
-                className="d-inline-block align-top"
-            />{' '}
-            React Bootstrap
+    return <Navbar className={css.outerNavbar + " sticky-top"} >
+        <Navbar.Brand className={css.navbarBrand} href="/dashboard">
+            <span className={css.graphUpIcon}>
+                <GraphUp />
+            </span> {' '}
+            Portfolio Manager
         </Navbar.Brand>
+        <Nav className={"ml-auto"}>
+            <Button >
+                <PersonCircle />{' '}
+                <span>{user.username}</span>
+            </Button>
+        </Nav>
     </Navbar>
 }
