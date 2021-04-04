@@ -36,6 +36,14 @@ class Portfolio(models.Model):
         return self.name
 
 
+class PortfolioSymbol(models.Model):
+    symbol = models.CharField(max_length=50)
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, null=False, related_name="symbols")
+
+    def __str__(self):
+        return self.symbol
+
+
 class SymbolPrice(models.Model):
     symbol = models.CharField(max_length=50)
     date_time = models.DateTimeField()

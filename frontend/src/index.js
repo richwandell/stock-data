@@ -28,7 +28,7 @@ ReactDOM.render(
                 <Route exact path="/login">
                     <Login />
                 </Route>
-                <Route exact path="/dashboard" >
+                <Route exact path="/dashboard/:portfolio_id?" >
                     <AuthContextProvider>
                         <ApolloProvider client={client} >
                             <Dashboard />

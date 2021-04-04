@@ -1,4 +1,4 @@
-from .models import DataSource, DataSourceCredential, Portfolio
+from .models import DataSource, DataSourceCredential, Portfolio, PortfolioSymbol
 import graphene
 from graphene_django import DjangoObjectType
 
@@ -17,11 +17,19 @@ class DataSourceCredentialsType(DjangoObjectType):
         fields = ("id", "api_key", "datasource")
 
 
+class PortfolioSymbolType(DjangoObjectType):
+
+    class Meta:
+        model = PortfolioSymbol
+        fields = ("id", "symbol", "portfolio")
+
+
 class PortfolioType(DjangoObjectType):
 
     class Meta:
         model = Portfolio
-        fields = ("id", "name", "user")
+        fields = ("id", "name", "user", "symbols")
+
 
 class Query(graphene.ObjectType):
 

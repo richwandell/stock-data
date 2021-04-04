@@ -1,3 +1,16 @@
 .main {
     margin-left: auto;
 }
+
+.symbolTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.symbolTable caption {
+    caption-side: top;
+}
+
+.symbolTable tbody td {
+    border: 1px solid grey;
+}

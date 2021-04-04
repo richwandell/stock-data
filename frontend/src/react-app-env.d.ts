@@ -15,7 +15,13 @@ export type AuthContextState = {
     setUser: Function
 }
 
+export type PortfolioSymbol = {
+    id: string,
+    symbol: string
+}
+
 export type Portfolio = {
     id: string,
-    name: string
+    name: string,
+    symbols: PortfolioSymbol[]
 }
