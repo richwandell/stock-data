@@ -3,8 +3,7 @@ services:
   app:
     image: stock_data_app
     ports:
-      - "8080:80"
-      - "8000:8000"
+      - "8080:80"      
       - "2222:22"
     env_file:
       - .env

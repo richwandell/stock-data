@@ -14,3 +14,8 @@ export type AuthContextState = {
     user: UserInfo,    
     setUser: Function
 }
+
+export type Portfolio = {
+    id: string,
+    name: string
+}

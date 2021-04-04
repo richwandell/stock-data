@@ -19,9 +19,10 @@ class DataSource(models.Model):
         return self.dstype
 
 
-class DataSourceCredentials(models.Model):
+class DataSourceCredential(models.Model):
     api_key = models.CharField(max_length=500)
     datasource = models.ForeignKey(DataSource, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
 
     def __str__(self):
         return self.datasource.dstype
@@ -29,11 +30,13 @@ class DataSourceCredentials(models.Model):
 
 class Portfolio(models.Model):
     name = models.CharField(max_length=1000)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.name
 
 
-class SymbolPrices(models.Model):
+class SymbolPrice(models.Model):
     symbol = models.CharField(max_length=50)
     date_time = models.DateTimeField()
     low = models.DecimalField(max_digits=13, decimal_places=4)
@@ -50,7 +53,8 @@ class SymbolPrices(models.Model):
             models.UniqueConstraint(fields=['symbol', 'date_time'], name='symbol_prices_symbol_date_time_uindex')
         ]
 
-class ApiRequests(models.Model):
+
+class ApiRequest(models.Model):
     request_date = models.IntegerField(max_length=10)
     symbol = models.CharField(max_length=50)
 

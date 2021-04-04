@@ -1,35 +1,28 @@
 import css from "./sidebar.module.css";
 import {Link} from "react-router-dom";
 import {Nav} from "react-bootstrap";
-import { gql, useQuery } from "@apollo/client";
+import {Portfolio} from "../../react-app-env";
 
-const API_CREDENTIALS = gql`
-    query{
-        allCredentials(name:"ALPHAVANTAGE") {
-          id,
-          apiKey,
-          datasource {
-            id,
-            dstype
-          }
-        }
-      }
-    `
+interface Props {
+    portfolios: Portfolio[],
+    loading: boolean
+}
 
-export function Sidebar() {
-    const {loading, error, data} = useQuery(API_CREDENTIALS)
+export function Sidebar({loading, portfolios}: Props) {
 
-    console.log(loading, error, data)
 
-    return <Nav className={"col-md-3 col-lg-2 bg-light " + css.sidebar}>
-        <div className={"position-sticky pt-3"}>
+    return <Nav className={(loading ? "skeleton " : "bg-light ") + "col-md-3 col-lg-2 " + css.sidebar}>
+        <div className={"position-sticky pt-3 " + css.innerDiv}>
+            <label>Portfolios</label>
             <ul className={"nav flex-column"}>
-                <li className={"nav-item"}>
-                    <Link className={"nav-link"} to={"/dashboard/1"}>Item 1</Link>
-                </li>
-                <li className={"nav-item"}>Item 2</li>
-                <li className={"nav-item"}>Item 3</li>
+                {portfolios.map((p) => {
+                    return <li key={p.id} className={"nav-item"}>
+                        <Link className={"nav-link"} to={`/dashboard/${p.id}`}>{p.name}</Link>
+                    </li>
+                })}
             </ul>
+            <div>Create Portfolio +</div>
+            <hr />
         </div>
     </Nav>
 }

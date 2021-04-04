@@ -1,7 +1,6 @@
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter as Router, Redirect, Route, Switch } from "react-router-dom";
 import { Placeholder } from "./shared/Placeholder";
@@ -9,9 +8,8 @@ import { Login } from "./pages/login/Login";
 import AuthContextProvider from "./shared/AuthContextProvider";
 import Dashboard from "./pages/dashboard/Dashboard";
 import { ApolloClient, InMemoryCache } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { ApolloProvider } from '@apollo/client';
-
+import './App.scss';
 
 
 const client = new ApolloClient({

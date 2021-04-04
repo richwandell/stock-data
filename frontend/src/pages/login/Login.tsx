@@ -1,8 +1,7 @@
 import {TopNavBar} from "../../shared/TopNavbar";
 import {Button, Form, Image} from "react-bootstrap";
 import css from "./login.module.css"
-import {useContext, useEffect, useState} from "react";
-import {AuthContext} from "../../shared/AuthContextProvider";
+import {useEffect, useState} from "react";
 import {UserInfo} from "../../react-app-env";
 import { useHistory } from "react-router-dom";
 
@@ -13,7 +12,7 @@ interface State {
 }
 
 export function Login() {
-    const {user, setUser} = useContext(AuthContext)
+    // const {user, setUser} = useContext(AuthContext)
     const [state, setState] = useState<State>({user: '', pass: '', csrf: ''})
     const history = useHistory()
 

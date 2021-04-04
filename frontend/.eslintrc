@@ -1,0 +1,8 @@
+{
+    "parser": "babel-eslint",
+    "extends": "react-app",
+    "rules": {
+      "react-hooks/exhaustive-deps": "off",
+      "eqeqeq": "off"
+    }
+  }

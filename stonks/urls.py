@@ -24,8 +24,7 @@ from stonks import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("graphql", userauthviews.graphql_view),
-    path('userauth/', include('stonks.userauth.urls')),
-    path('login/', index),
-    path('dashboard/', index),
-    path('', index)
+    path('userauth/', include('stonks.userauth.urls')),    
+    path('', index),
+    re_path(r'^.*/$', index)
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
