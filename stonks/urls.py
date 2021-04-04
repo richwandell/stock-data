@@ -15,15 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
-from django.views.decorators.csrf import csrf_exempt
 from django.conf.urls.static import static
-from graphene_django.views import GraphQLView
+
 from .views import index
+from .userauth import views as userauthviews
 from stonks import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=True))),
+    path("graphql", userauthviews.graphql_view),
     path('userauth/', include('stonks.userauth.urls')),
     path('login/', index),
     path('dashboard/', index),

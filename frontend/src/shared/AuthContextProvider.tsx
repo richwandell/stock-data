@@ -1,11 +1,7 @@
-import React, {useEffect, useState} from "react";
-import {AuthContextState, UserInfo} from "../react-app-env";
-import {TopNavBar} from "./TopNavbar";
+import React, { useEffect, useState } from "react";
+import { AuthContextState, UserInfo } from "../react-app-env";
+import { TopNavBar } from "./TopNavbar";
 
-const csrfHeader = {
-    'X-CsrfToken': document.querySelectorAll('input[name=csrfmiddlewaretoken]')[0]
-        .getAttribute('value') || ''
-}
 
 const defaultUser = {
     email: '',
@@ -19,9 +15,8 @@ const defaultUser = {
 }
 
 export const AuthContext = React.createContext<AuthContextState>({
-    user: defaultUser,
-    csrfHeader: csrfHeader,
-    setUser: () => {}
+    user: defaultUser,    
+    setUser: () => { }
 });
 
 export default function AuthContextProvider(props: any) {
@@ -29,8 +24,7 @@ export default function AuthContextProvider(props: any) {
 
 
     const context: AuthContextState = {
-        user,
-        csrfHeader,
+        user,        
         setUser
     }
 
@@ -40,7 +34,7 @@ export default function AuthContextProvider(props: any) {
                 const response = await fetch('/userauth/get-user/')
                 const userData: UserInfo = await response.json()
                 if (!userData.logged_in || !userData.is_active) {
-                    throw ''
+                    throw new Error('User not logged in')
                 }
                 setUser(userData)
             } catch {
@@ -50,8 +44,8 @@ export default function AuthContextProvider(props: any) {
     }, []);
 
     return (
-        <AuthContext.Provider value={{...context}}>
-            <TopNavBar  />
+        <AuthContext.Provider value={{ ...context }}>
+            <TopNavBar />
             {props.children}
         </AuthContext.Provider>
     )

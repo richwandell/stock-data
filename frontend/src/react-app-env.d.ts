@@ -11,9 +11,6 @@ export type UserInfo = {
 }
 
 export type AuthContextState = {
-    user: UserInfo,
-    csrfHeader: {
-        'X-CsrfToken': string
-    },
+    user: UserInfo,    
     setUser: Function
 }

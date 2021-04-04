@@ -31,3 +31,32 @@ class Portfolio(models.Model):
     name = models.CharField(max_length=1000)
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class SymbolPrices(models.Model):
+    symbol = models.CharField(max_length=50)
+    date_time = models.DateTimeField()
+    low = models.DecimalField(max_digits=13, decimal_places=4)
+    dividend_amount = models.DecimalField(max_digits=13, decimal_places=4)
+    adjusted_close = models.DecimalField(max_digits=13, decimal_places=4)
+    open = models.DecimalField(max_digits=13, decimal_places=4)
+    split_coefficient = models.DecimalField(max_digits=13, decimal_places=4)
+    close = models.DecimalField(max_digits=13, decimal_places=4)
+    high = models.DecimalField(max_digits=13, decimal_places=4)
+    volume = models.BigIntegerField(max_length=20)
+
+    class Meta:
+        constraints = [            
+            models.UniqueConstraint(fields=['symbol', 'date_time'], name='symbol_prices_symbol_date_time_uindex')
+        ]
+
+class ApiRequests(models.Model):
+    request_date = models.IntegerField(max_length=10)
+    symbol = models.CharField(max_length=50)
+
+    class Meta:
+        constraints = [            
+            models.UniqueConstraint(fields=['request_date', 'symbol'], name='request_date_symbol_unique')
+        ]
+
+

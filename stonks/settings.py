@@ -135,8 +135,8 @@ GRAPHENE = {
     "SCHEMA": "stonks.stonksconfig.schema.schema"
 }
 
-# STATICFILES_FINDERS = [
-#     'django.contrib.staticfiles.finders.FileSystemFinder'
-# ]
-
-
+SESSION_COOKIE_NAME = "stonks-data-session"
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'strict' 
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True

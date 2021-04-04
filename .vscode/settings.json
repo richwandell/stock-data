@@ -1,8 +1,9 @@
 {
     "files.exclude": {
-        "__pycache__": true,
+        "**/*__pycache__": true,
         ".idea": true,
         ".run": true,
-        ".venv": true
-    }
+        ".venv": true,        
+    },
+    "workbench.tree.indent": 20
 }

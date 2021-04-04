@@ -1,20 +1,29 @@
 import {TopNavBar} from "../../shared/TopNavbar";
 import {Button, Form, Image} from "react-bootstrap";
 import css from "./login.module.css"
-import {useContext, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {AuthContext} from "../../shared/AuthContextProvider";
 import {UserInfo} from "../../react-app-env";
 import { useHistory } from "react-router-dom";
 
 interface State {
     user: string,
-    pass: string
+    pass: string,
+    csrf: string
 }
 
 export function Login() {
-    const {user, csrfHeader, setUser} = useContext(AuthContext)
-    const [state, setState] = useState<State>({user: '', pass: ''})
+    const {user, setUser} = useContext(AuthContext)
+    const [state, setState] = useState<State>({user: '', pass: '', csrf: ''})
     const history = useHistory()
+
+    useEffect(() => {
+        const csrf = document.querySelectorAll('input[name=csrfmiddlewaretoken]')[0].getAttribute('value') || ''
+        if (csrf.trim() === '') window.location.reload()
+        document.querySelectorAll('input[name=csrfmiddlewaretoken]')[0].setAttribute('value', '')
+        setState({...state, csrf})
+    }, [false])
+    
 
     async function submitForm() {
         try {
@@ -23,7 +32,7 @@ export function Login() {
                 body: JSON.stringify(state),
                 headers: {
                     'Content-Type': 'application/json',
-                    ...csrfHeader
+                    'X-CsrfToken': state.csrf                    
                 }
             })
             const data: {user: UserInfo} = await response.json()
