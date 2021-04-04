@@ -10,11 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -27,20 +27,20 @@ DEBUG = os.environ.get('DJANGO_DEBUG') == "true"
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'host.docker.internal']
 
-
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'stonks.stonksconfig',
+    'stonks.frontend',
     'django_celery_results',
     "graphene_django",
-    'rest_framework'
+    'rest_framework',
+    'django.contrib.staticfiles',
 ]
 
 MIDDLEWARE = [
@@ -73,7 +73,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'stonks.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
@@ -87,7 +86,6 @@ DATABASES = {
         'PORT': os.environ.get('POSTGRES_PORT')
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -107,7 +105,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -121,12 +118,12 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 CELERY_TIMEZONE = "America/New_York"
@@ -137,4 +134,9 @@ CELERY_RESULT_BACKEND = 'django-db'
 GRAPHENE = {
     "SCHEMA": "stonks.stonksconfig.schema.schema"
 }
+
+# STATICFILES_FINDERS = [
+#     'django.contrib.staticfiles.finders.FileSystemFinder'
+# ]
+
 

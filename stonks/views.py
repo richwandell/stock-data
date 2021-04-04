@@ -1,4 +1,6 @@
 # Create your views here.
+import os
+
 import django
 from django.http import HttpResponse
 from django.template import Template, Context
@@ -7,7 +9,7 @@ from stonks import settings
 
 
 def index(request):
-    file = settings.STATIC_ROOT + "/frontend/index.html"
+    file = os.path.dirname(os.path.abspath(__file__)) + "/frontend/static/frontend/index.html"
     with open(file) as file:
 
         t = Template(file.read())
