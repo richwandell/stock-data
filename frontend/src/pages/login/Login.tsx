@@ -27,7 +27,9 @@ export function Login() {
                 }
             })
             const data: {user: UserInfo} = await response.json()
-            history.push("/dashboard")
+            if (data.user.is_active && data.user.logged_in) {
+                history.push("/dashboard")
+            }
         } catch (error) {
             console.log(error)
         }
