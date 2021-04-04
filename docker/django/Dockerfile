@@ -3,7 +3,7 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV CI 1
 COPY ./frontend/ /app/frontend/
-RUN cd frontend && npm ci
+RUN cd frontend && npm ci && npm
 
 FROM python:3.9.2-slim as stage2
 WORKDIR /app

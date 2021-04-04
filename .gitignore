@@ -17,3 +17,4 @@ db.sqlite3
 .env
 !frontend/.env
 static
+__pycache__
