@@ -4,7 +4,6 @@ import {Portfolio, PortfolioSymbol} from "../../react-app-env";
 import {gql, useQuery} from "@apollo/client";
 
 interface Props {
-    loading: boolean,
     state: DashboardState,
     portfolio: Portfolio
 }
@@ -22,9 +21,27 @@ const GET_PORTFOLIO_STATS = gql`
     }
 `
 
+type QueryResponse = {
+    optimizedPortfolios:  {
+        portfolioId: string,
+        efficientPortfolio: {
+            symbols: string[],
+            portfolios: number[][]
+        }
+    },
+    portfolioStats: {
+        portfolioId: string,
+        portfolioStats: {
+            asset_reward: number[],
+            asset_risk: number[],
+            assets: string[]
+        }
+    }
+}
+
 export function Main({state, portfolio}: Props) {
 
-    const {loading, error, data} = useQuery(GET_PORTFOLIO_STATS, {
+    const {loading, data} = useQuery<QueryResponse>(GET_PORTFOLIO_STATS, {
         variables: {
             portfolioId: portfolio.portfolioId
         }
@@ -39,8 +56,8 @@ export function Main({state, portfolio}: Props) {
             <thead>
                 <tr>
                     <th>Symbol</th>
-                    <th>Name</th>
-                    <th>Open</th>
+                    <th>Risk</th>
+                    <th>Reward</th>
                     <th>High</th>
                     <th>Low</th>
                     <th>Close</th>
@@ -48,11 +65,18 @@ export function Main({state, portfolio}: Props) {
                 </tr>
             </thead>
             <tbody>
-                {portfolio.symbols.map((item: PortfolioSymbol, index: number) => {
+                {!loading && data && portfolio.symbols.map((item: PortfolioSymbol) => {
+                    const index = data.portfolioStats.portfolioStats.assets.indexOf(item.symbol)
+                    let risk = undefined
+                    let reward = undefined
+                    if (index > -1) {
+                        risk = data.portfolioStats.portfolioStats.asset_risk[index]
+                        reward = data.portfolioStats.portfolioStats.asset_reward[index]
+                    }
                     return <tr>
                         <td>{item.symbol}</td>
-                        <td></td>
-                        <td></td>
+                        <td>{risk && risk}</td>
+                        <td>{reward && reward}</td>
                         <td></td>
                         <td></td>
                         <td></td>
