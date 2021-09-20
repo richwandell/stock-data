@@ -3,7 +3,7 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV CI 1
 COPY ./frontend/ /app/frontend/
-RUN cd frontend && npm ci && npm run-script build
+RUN cd frontend && npm ci && CI=true npm run-script build
 
 FROM python:3.9.2-slim as stage2
 WORKDIR /app
@@ -35,10 +35,10 @@ COPY . /app/
 COPY --from=stage1 /app/frontend/build/ /app/stonks/frontend/static/frontend/
 
 RUN cd /app \
-    && pipenv install --skip-lock \
-    && pipenv run python manage.py collectstatic
+    && pipenv sync --system \
+    && python manage.py collectstatic
 
-CMD pipenv run gunicorn \
+CMD gunicorn \
     stonks.asgi:application \
     -k uvicorn.workers.UvicornWorker \
     -b :8000 \

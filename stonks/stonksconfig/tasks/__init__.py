@@ -1,7 +1,4 @@
-# Create your tasks here
-
 from celery import shared_task
-from .models import DataSource
 
 
 @shared_task
@@ -17,4 +14,14 @@ def mul(x, y):
 @shared_task
 def xsum(numbers):
     return sum(numbers)
+
+
+@shared_task
+def test_shared():
+    import random
+    return int(random.random() * 10) * int(random.random() * 10)
+
+from .load_alphavantage_prices import load_alphavantage_prices
+
+
 

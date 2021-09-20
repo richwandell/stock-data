@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 import sys
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,13 +24,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG') == "true"
+DEBUG = bool(os.environ.get('DJANGO_DEBUG'))
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'host.docker.internal']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'grappelli',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -37,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'stonks.stonksconfig',
     'stonks.frontend',
+    'stonks.optimization',
     'django_celery_results',
     "graphene_django",
     'rest_framework',
@@ -126,13 +129,20 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+# Celery config
 CELERY_TIMEZONE = "America/New_York"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_RESULT_BACKEND = 'django-db'
+# CELERY_BEAT_SCHEDULE = {
+#     'test_shared': {
+#         'task': 'stonks.stonksconfig.tasks.test_shared',
+#         'schedule': crontab(minute="*")
+#     }
+# }
 
 GRAPHENE = {
-    "SCHEMA": "stonks.stonksconfig.schema.schema"
+    "SCHEMA": "stonks.gql_schema.schema"
 }
 
 SESSION_COOKIE_NAME = "stonks-data-session"
@@ -140,3 +150,38 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'strict' 
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_REDIS = {
+    'prefix': 'session',
+    'host': os.environ.get('REDIS_HOST'),
+    'port': os.environ.get('REDIS_PORT')
+}
+SESSION_ENGINE = 'redis_sessions.session'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[DJANGO][{levelname}][{asctime}][{module}][{process:d}][{thread:d}][{message}]',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG'
+    }
+}
+
+if bool(os.environ.get('LOG_DB')):
+    LOGGING['loggers'] = {
+        'django.db.backends': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        }
+    }

@@ -13,6 +13,7 @@ const PORTFOLIOS = gql`
       allPortfolios {
         id
         name,
+        portfolioId,
         symbols {
           id,
           symbol
@@ -40,7 +41,7 @@ export default function Dashboard() {
     }, [data, portfolio_id])
 
     const selectedPortfolio = data?.allPortfolios?.length ?
-        data.allPortfolios[state.selected_portfolio] : {id: "", name: "", symbols: []}
+        data.allPortfolios[state.selected_portfolio] : {id: "", name: "", portfolioId: "", symbols: []}
 
     return <Container fluid>
         <Row className={css.containerRow}>
@@ -48,10 +49,9 @@ export default function Dashboard() {
                 state={state}
                 loading={loading}
                 portfolios={data?.allPortfolios || []}/>
-            <Main
-                loading={loading}
+            {!loading && <Main
                 state={state}
-                portfolio={selectedPortfolio}/>
+                portfolio={selectedPortfolio} />}
         </Row>
     </Container>
 }

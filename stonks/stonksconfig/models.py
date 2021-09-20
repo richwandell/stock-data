@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 class DataSource(models.Model):
 
-    class SourceTypes(models.TextChoices):
+    class Sources(models.TextChoices):
         TD_AMERITRADE = 'TD_AMERITRADE', _('TD Ameritrade')
         QUANDL = 'QUANDL', _('Quandl')
         SIMFIN = 'SIMFIN', _('Simfin')
@@ -13,7 +13,7 @@ class DataSource(models.Model):
         NEWS_API_ORG = 'NEWS_API_ORG', _('News API.org')
         TWITTER = 'TWITTER', _('Twitter')
 
-    dstype = models.CharField(max_length=500, choices=SourceTypes.choices, default=SourceTypes.ALPHAVANTAGE)
+    dstype = models.CharField(max_length=500, choices=Sources.choices, default=Sources.ALPHAVANTAGE)
 
     def __str__(self):
         return self.dstype
@@ -65,10 +65,12 @@ class SymbolPrice(models.Model):
 class ApiRequest(models.Model):
     request_date = models.IntegerField(max_length=10)
     symbol = models.CharField(max_length=50)
+    dstype = models.CharField(max_length=500, choices=DataSource.Sources.choices,
+                              default=DataSource.Sources.ALPHAVANTAGE)
 
     class Meta:
         constraints = [            
-            models.UniqueConstraint(fields=['request_date', 'symbol'], name='request_date_symbol_unique')
+            models.UniqueConstraint(fields=['request_date', 'symbol', 'dstype'], name='request_date_symbol_type_unique')
         ]
 
 

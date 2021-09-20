@@ -28,7 +28,8 @@ def user_login(request):
     else:
         raise Http404()
 
-@csrf_exempt      
+
+@csrf_exempt
 def graphql_view(request):
     if request.user.is_anonymous:
         raise Http404()

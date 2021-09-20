@@ -1,3 +1,5 @@
+import hashlib
+
 from .models import DataSource, DataSourceCredential, Portfolio, PortfolioSymbol
 import graphene
 from graphene_django import DjangoObjectType
@@ -24,11 +26,25 @@ class PortfolioSymbolType(DjangoObjectType):
         fields = ("id", "symbol", "portfolio")
 
 
+class PortfolioIdType(graphene.Scalar):
+
+    @staticmethod
+    def serialize(root):
+        symbol_string = "_".join(sorted(root.args[0]))
+        return hashlib.md5(symbol_string.encode("utf8")).hexdigest()
+
+
 class PortfolioType(DjangoObjectType):
+    portfolio_id = graphene.Field(PortfolioIdType)
 
     class Meta:
         model = Portfolio
         fields = ("id", "name", "user", "symbols")
+
+    @staticmethod
+    def resolve_portfolio_id(root, info):
+        s = list([x.symbol for x in root.symbols.all()])
+        return PortfolioIdType(s)
 
 
 class Query(graphene.ObjectType):
@@ -51,4 +67,3 @@ class Query(graphene.ObjectType):
             return None
 
 
-schema = graphene.Schema(query=Query)

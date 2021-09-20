@@ -17,6 +17,11 @@ django-celery-results = "==2.0.1"
 redis = "*"
 graphene-django = "*"
 djangorestframework = "*"
+ta = "*"
+django-grappelli = "*"
+django-redis-sessions = "*"
+requests = "*"
+scipy = "*"
 
 [requires]
 python_version = "3.9"

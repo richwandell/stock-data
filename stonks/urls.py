@@ -22,6 +22,7 @@ from .userauth import views as userauthviews
 from stonks import settings
 
 urlpatterns = [
+    path('grappelli/', include('grappelli.urls')),
     path('admin/', admin.site.urls),
     path("graphql", userauthviews.graphql_view),
     path('userauth/', include('stonks.userauth.urls')),    

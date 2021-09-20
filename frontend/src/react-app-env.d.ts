@@ -23,5 +23,6 @@ export type PortfolioSymbol = {
 export type Portfolio = {
     id: string,
     name: string,
+    portfolioId: string,
     symbols: PortfolioSymbol[]
 }

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Start" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="Start Django" type="PythonConfigurationType" factoryName="Python">
     <module name="stock_data" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
