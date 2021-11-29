@@ -210,60 +210,78 @@ class PortfolioOptimizer:
             o = MonthlyPortfolioStats(portfolio_id=key, portfolio_stats=data)
         o.save()
 
-    # def get_random_portfolios(self, portfolio: dict)->Tuple[np.ndarray, list, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    #     self.__load_symbols(portfolio)
-    #
-    #     risk_free_asset_return = 0.0
-    #     if "risk_free" in portfolio:
-    #         if "perc" in portfolio["risk_free"]:
-    #             risk_free_asset_return = portfolio["risk_free"]["perc"] / 100
-    #
-    #     df = self.db.get_monthly_symbols_as_dataframe(portfolio["symbols"])
-    #     df['date_time'] = pd.to_datetime(df['date_time'])
-    #     df = df.set_index('date_time')
-    #     df = df.pivot(columns='symbol')
-    #     df = df.dropna()
-    #     column_names = [x[1] for x in list(df)]
-    #
-    #     returns_monthly = df.pct_change()
-    #     returns_mean = returns_monthly.mean()
-    #     annualized_return = (((1.0 + returns_mean) ** 12.0) - 1.0)
-    #     covariance = returns_monthly.cov() * 12.0
-    #
-    #     portfolios = []
-    #     portfolio_risk = []
-    #     portfolio_return = []
-    #     sharpe_ratio = []
-    #
-    #     rows, columns = df.shape
-    #     num_assets = columns
-    #     num_portfolios = 50000
-    #
-    #     to_compute = num_portfolios / os.cpu_count()
-    #     pool_args = [(risk_free_asset_return, int(to_compute), num_assets, annualized_return, covariance)
-    #                  for _ in range(os.cpu_count())]
-    #     self.pool.map(compute_portfolio, pool_args)
-    #
-    #     returned = 0
-    #     while True:
-    #         return_vals = self.queue.get(True)
-    #         for returns in return_vals:
-    #             a, b, c, d = returns
-    #             portfolios.append(a)
-    #             portfolio_risk.append(b)
-    #             portfolio_return.append(c)
-    #             sharpe_ratio.append(d)
-    #
-    #         returned += 1
-    #         if returned == os.cpu_count():
-    #             break
-    #
-    #     return np.column_stack((
-    #         np.array(portfolios),
-    #         np.array(portfolio_risk),
-    #         np.array(portfolio_return),
-    #         np.array(sharpe_ratio)
-    #     )), column_names, returns_monthly, returns_mean, annualized_return, covariance
+    def save_random_portfolios(self, key, portfolios: np.ndarray, column_names: List[str], returns_monthly: pd.DataFrame,
+                               returns_mean: pd.Series, annualized_return: pd.Series, covariance: pd.DataFrame):
+        from ..models import MonthlyPortfolioStats
+        returns_monthly = returns_monthly.fillna(value=0.0)
+        data = {
+            "portfolios": portfolios.tolist(),
+            "column_names": column_names,
+            "returns_monthly": returns_monthly.to_dict('split'),
+            "returns_mean": returns_mean.tolist(),
+            "annualized_return": annualized_return.tolist(),
+            "covariance": covariance.to_dict('split')
+        }
+        for i, item in enumerate(data['returns_monthly']['index']):
+            data['returns_monthly']['index'][i] = item.timestamp()
+        try:
+            o = MonthlyPortfolioStats.objects.get(portfolio_id=key)
+            o.portfolio_stats = data
+        except MonthlyPortfolioStats.DoesNotExist:
+            o = MonthlyPortfolioStats(portfolio_id=key, portfolio_stats=data)
+        o.save()
+
+    def get_random_portfolios(self, portfolio: List[str]) -> Tuple[np.ndarray, list, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        self.__load_symbols(portfolio)
+
+        risk_free_asset_return = 0.0
+
+        df = self.get_monthly_symbols_as_dataframe(portfolio)
+        df['date_time'] = pd.to_datetime(df['date_time'])
+        df = df.set_index('date_time')
+        df = df.pivot(columns='symbol')
+        df = df.dropna()
+        column_names = [x[1] for x in list(df)]
+
+        returns_monthly = df.pct_change()
+        returns_mean = returns_monthly.mean()
+        annualized_return = (((1.0 + returns_mean) ** 12.0) - 1.0)
+        covariance = returns_monthly.cov() * 12.0
+
+        portfolios = []
+        portfolio_risk = []
+        portfolio_return = []
+        sharpe_ratio = []
+
+        rows, columns = df.shape
+        num_assets = columns
+        num_portfolios = 50000
+
+        to_compute = num_portfolios / os.cpu_count()
+        pool_args = [(risk_free_asset_return, int(to_compute), num_assets, annualized_return, covariance)
+                     for _ in range(os.cpu_count())]
+        self.pool.map(compute_portfolio, pool_args)
+
+        returned = 0
+        while True:
+            return_vals = self.queue.get(True)
+            for returns in return_vals:
+                a, b, c, d = returns
+                portfolios.append(a)
+                portfolio_risk.append(b)
+                portfolio_return.append(c)
+                sharpe_ratio.append(d)
+
+            returned += 1
+            if returned == os.cpu_count():
+                break
+
+        return np.column_stack((
+            np.array(portfolios),
+            np.array(portfolio_risk),
+            np.array(portfolio_return),
+            np.array(sharpe_ratio)
+        )), column_names, returns_monthly, returns_mean, annualized_return, covariance
     #
     # def get_risk_free_frontier(self, portfolio: dict):
     #     self.__load_symbols(portfolio)
@@ -322,5 +340,8 @@ def optimize_portfolio(portfolio: List[str]):
     optimizer.save_efficient_portfolio_stats(portfolio_key, efficient_frontier, symbols)
     asset_risk, asset_reward, assets = optimizer.get_monthly_portfolio_stats(portfolio)
     optimizer.save_monthly_portfolio_stats(portfolio_key, asset_risk, asset_reward, assets)
+    portfolios, *others = optimizer.get_random_portfolios(portfolio)
+    optimizer.save_random_portfolios(portfolio_key + "_random", portfolios, others[0], others[1], others[2], others[3], others[4])
     optimizer.pool.close()
+    print("done")
 

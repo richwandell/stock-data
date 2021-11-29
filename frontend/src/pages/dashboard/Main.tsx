@@ -17,6 +17,10 @@ const GET_PORTFOLIO_STATS = gql`
       optimizedPortfolios(portfolioId: $portfolioId) {
         portfolioId,
         efficientPortfolio
+      },
+      randomPortfolios(portfolioId: $portfolioId) {
+        portfolioId,
+        portfolioStats
       }
     }
 `
@@ -35,6 +39,12 @@ type QueryResponse = {
             asset_reward: number[],
             asset_risk: number[],
             assets: string[]
+        }
+    },
+    randomPortfolios: {
+        portfolioId: string,
+        portfolioStats: {
+
         }
     }
 }
@@ -65,15 +75,15 @@ export function Main({state, portfolio}: Props) {
                 </tr>
             </thead>
             <tbody>
-                {!loading && data && portfolio.symbols.map((item: PortfolioSymbol) => {
-                    const index = data.portfolioStats.portfolioStats.assets.indexOf(item.symbol)
+                {!loading && data && portfolio.symbols.map((item: PortfolioSymbol, index: number) => {
+                    const iindex = data.portfolioStats.portfolioStats.assets.indexOf(item.symbol)
                     let risk = undefined
                     let reward = undefined
-                    if (index > -1) {
-                        risk = data.portfolioStats.portfolioStats.asset_risk[index]
-                        reward = data.portfolioStats.portfolioStats.asset_reward[index]
+                    if (iindex > -1) {
+                        risk = data.portfolioStats.portfolioStats.asset_risk[iindex]
+                        reward = data.portfolioStats.portfolioStats.asset_reward[iindex]
                     }
-                    return <tr>
+                    return <tr key={index}>
                         <td>{item.symbol}</td>
                         <td>{risk && risk}</td>
                         <td>{reward && reward}</td>
